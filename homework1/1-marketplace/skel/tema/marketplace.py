@@ -5,7 +5,10 @@ Computer Systems Architecture Course
 Assignment 1
 March 2021
 """
-from threading import Lock, Semaphore, Thread, currentThread 
+
+from threading import Lock, Semaphore, Thread, currentThread
+import unittest 
+import tema.product
 
 class Marketplace:
     """
@@ -194,3 +197,157 @@ class Marketplace:
             self.print_lock.release()
     
         return all_products
+
+
+class TestMarketplace(unittest.TestCase):
+
+    def setUp(self):
+        queue_size_per_producer = 2
+        self.market = Marketplace(queue_size_per_producer)
+
+    # Test with 2 producers for registration
+    def test_register_producer(self):
+        producer_id1 = self.market.register_producer()
+        producer_id2 = self.market.register_producer()
+
+        self.assertEqual(producer_id1, 1)
+        self.assertNotEqual(producer_id1, producer_id2)
+
+    # Test with 1 producer and 1 product expecting True
+    def test_publish_true(self):
+        producer_id = self.market.register_producer()
+        green_tea = product.Tea("Matcha", 5, "green")
+
+        published = self.market.publish(producer_id, green_tea)
+        self.assertTrue(published)
+
+
+    # Test with 1 producer, 3 products exeeds the limit of 2
+    def test_publish_exceed_limit(self):
+        producer_id = self.market.register_producer()
+        black_tea = product.Tea("Earl Grey", 5, "black")
+        berries_tea = product.Tea("Raspberry Tea", 5, "berries")
+        flat_white = product.Coffee("Flat White", 5, 5.05, "MEDIUM")
+
+        self.market.publish(producer_id, black_tea)
+        self.market.publish(producer_id, berries_tea)
+
+        published = self.market.publish(producer_id, flat_white)
+        self.assertFalse(published)
+
+
+    # Test multiple producers pubblishing products, expecting True
+    def test_publish_multiple_producers(self):
+        producer_id1 = self.market.register_producer()
+        producer_id2 = self.market.register_producer()
+        green_tea = product.Tea("Matcha", 5, "green")
+        ice_coffee = product.Coffee("Ice Coffee", 5, 4.05, "LOW")
+
+        self.market.publish(producer_id1, green_tea)
+        self.market.publish(producer_id2, ice_coffee)
+
+        published1 = self.market.publish(producer_id1, green_tea)
+        published2 = self.market.publish(producer_id2, ice_coffee)
+
+        self.assertTrue(published1)
+        self.assertTrue(published2)
+
+
+    # Test with 2 consumers for registration, expecting 2 different ids
+    def test_new_cart(self):
+        cart_id1 = self.market.new_cart()
+        cart_id2 = self.market.new_cart()
+
+        self.assertEqual(cart_id1, 1)
+        self.assertNotEqual(cart_id1, cart_id2)
+
+
+    # Test that the product is not available in the buffer
+    def test_add_to_cart_no_product(self):
+        cart_id = self.market.new_cart()
+        green_tea = product.Tea("Matcha", 5, "green")
+        added = self.market.add_to_cart(cart_id, green_tea)
+
+        self.assertFalse(added)
+
+    # Test that the product is added to the cart and removed from the buffer
+    def test_add_to_cart(self):
+        producer_id = self.market.register_producer()
+        green_tea = product.Tea("Matcha", 5, "green")
+        self.market.publish(producer_id, green_tea)
+
+        cart_id = self.market.new_cart()
+        added = self.market.add_to_cart(cart_id, green_tea)
+
+        self.assertTrue(added)
+        self.assertEqual(len(self.market.cart[cart_id]), 1)
+        self.assertEqual(len(self.market.buffer[green_tea]), 0)
+        self.assertEqual(self.market.producers[producer_id], 0)
+
+    # Test that the product is removed from the cart and added back to the buffer
+    def test_remove_from_cart(self):
+        producer_id = self.market.register_producer()
+        green_tea = product.Tea("Matcha", 5, "green")
+        self.market.publish(producer_id, green_tea)
+
+        cart_id = self.market.new_cart()
+        self.market.add_to_cart(cart_id, green_tea)
+        self.market.remove_from_cart(cart_id, green_tea)
+
+        self.assertEqual(len(self.market.cart[cart_id]), 0)
+        self.assertEqual(len(self.market.buffer[green_tea]), 1)
+        self.assertEqual(self.market.producers[producer_id], 1)
+        
+
+    # Test that the cart is empty after the order is placed
+    def test_place_order(self):
+        producer_id = self.market.register_producer()
+        green_tea = product.Tea("Matcha", 5, "green")
+        self.market.publish(producer_id, green_tea)
+      
+        cart_id = self.market.new_cart()
+        self.market.add_to_cart(cart_id, green_tea)
+        products = self.market.place_order(cart_id)
+
+        self.assertEqual(len(products), 1)
+        self.assertEqual(self.market.cart, {})
+
+
+    # Test multiple functionalities
+    def test_multiple(self):
+        producer_id1 = self.market.register_producer()
+        producer_id2 = self.market.register_producer()
+
+        green_tea = product.Tea("Matcha", 5, "green")
+        ice_coffee = product.Coffee("Ice Coffee", 5, 4.05, "LOW")
+
+        self.market.publish(producer_id1, green_tea)
+        self.market.publish(producer_id1, ice_coffee)
+        self.market.publish(producer_id2, ice_coffee)
+        self.market.publish(producer_id2, green_tea)
+
+        cart_id1 = self.market.new_cart()
+
+        self.market.add_to_cart(cart_id1, green_tea)
+        self.market.add_to_cart(cart_id1, ice_coffee)
+
+        # Test that the products are producted by the first producer
+        self.assertEqual(self.market.cart[cart_id1], [(producer_id1, green_tea),
+                                                      (producer_id1, ice_coffee)])
+        
+        self.assertEqual(self.market.producers[producer_id1], 0)
+        
+
+        # Remove from cart
+        self.market.remove_from_cart(cart_id1, ice_coffee)
+        self.assertEqual(self.market.cart[cart_id1], [(producer_id1, green_tea)])
+        self.assertEqual(self.market.producers[producer_id1], 1)
+
+        # Place order
+        products = self.market.place_order(cart_id1)
+        self.assertEqual(products, [green_tea])
+        self.assertEqual(self.market.cart, {})
+
+        
+
+        
