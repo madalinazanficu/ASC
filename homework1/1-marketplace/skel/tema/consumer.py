@@ -51,7 +51,6 @@ class Consumer(Thread):
 
             # Each cart has a list of operations
             for operation in cart:
-                # TODO: try another extraction
                 action = operation['type']
                 product = operation['product']
                 quantity = operation['quantity']
