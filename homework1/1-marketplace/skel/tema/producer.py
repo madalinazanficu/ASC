@@ -39,9 +39,6 @@ class Producer(Thread):
 
         # Thread initialization
         Thread.__init__(self, **kwargs)
-        
-        # Each producer has a list of products that it has placed in the marketplace
-        self.placed_products = []
 
     def run(self):
         # Producer Registration
@@ -51,20 +48,17 @@ class Producer(Thread):
         while True:
             for product in self.products:
 
-                # Try to publish q quantity of the current product
-                for q in range(product[2]):
+                # Try to publish this quantity of the current product
+                for q in range(int(product[1])):
                 
-                    published = self.marketplace.publish(producer_id, product)
+                    published = self.marketplace.publish(producer_id, product[0])
 
                     # If the marketplace is full, wait and try again
                     while not published:
                         sleep(self.republish_wait_time)
-                        published = self.marketplace.publish(producer_id, product)
-
-                    # Add the product to the list of placed products
-                    self.placed_products.append(product)
+                        published = self.marketplace.publish(producer_id, product[0])
 
                     # Wait until to publish something else
-                    sleep(product[3])
+                    sleep(product[2])
         
 

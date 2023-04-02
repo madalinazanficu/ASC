@@ -51,9 +51,10 @@ class Consumer(Thread):
 
             # Each cart has a list of operations
             for operation in cart:
-                action = operation[0]
-                product = operation[1]
-                quantity = operation[2]
+                # TODO: try another extraction
+                action = operation['type']
+                product = operation['product']
+                quantity = operation['quantity']
 
                 # Try to add/remove the desired quantity of the current product
                 for q in range(quantity):
@@ -68,11 +69,10 @@ class Consumer(Thread):
 
                     elif action == "remove":
                         removed = self.marketplace.remove_from_cart(cart_id, product)
-
-                        #TODO: what happens if the product can't be removed?
             
             # All operations for the current cart are done => place the order
-            self.marketplace.place_order(cart_id)
+            all_products = []
+            all_products = self.marketplace.place_order(cart_id)
            
            
                 
