@@ -49,8 +49,9 @@ class Producer(Thread):
             for product in self.products:
 
                 # Try to publish this quantity of the current product
-                for q in range(int(product[1])):
-                
+                quantity = int(product[1])
+                while quantity > 0:
+
                     published = self.marketplace.publish(producer_id, product[0])
 
                     # If the marketplace is full, wait and try again
@@ -60,5 +61,4 @@ class Producer(Thread):
 
                     # Wait until to publish something else
                     sleep(product[2])
-        
-
+                    quantity -= 1

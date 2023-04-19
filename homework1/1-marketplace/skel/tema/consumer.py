@@ -56,8 +56,8 @@ class Consumer(Thread):
                 quantity = operation['quantity']
 
                 # Try to add/remove the desired quantity of the current product
-                for q in range(quantity):
-
+                i = 0
+                while i < quantity:
                     if action == "add":
                         added = self.marketplace.add_to_cart(cart_id, product)
 
@@ -67,14 +67,9 @@ class Consumer(Thread):
                             added = self.marketplace.add_to_cart(cart_id, product)
 
                     elif action == "remove":
-                        removed = self.marketplace.remove_from_cart(cart_id, product)
-            
-            # All operations for the current cart are done => place the order
-            all_products = []
-            all_products = self.marketplace.place_order(cart_id)
-           
-           
-                
-                    
-                   
+                        self.marketplace.remove_from_cart(cart_id, product)
 
+                    i += 1
+
+            # All operations for the current cart are done => place the order
+            self.marketplace.place_order(cart_id)
