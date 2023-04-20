@@ -8,8 +8,9 @@ March 2021
 
 from threading import Lock, currentThread
 import unittest
-import tema.product
 import logging
+from logging.handlers import RotatingFileHandler
+from .product import Tea, Coffee
 
 class Marketplace:
     """
@@ -43,22 +44,22 @@ class Marketplace:
         # Locks and sync components
         self.register_lock = Lock()
         self.cart_lock = Lock()
-        self.prod_lock = Lock()
-        self.consume_lock = Lock()
         self.print_lock = Lock()
 
-        # Logging setup
-        #logging.basicConfig(level=logging.INFO)
-        #handler = logging.FileHandler('marketplace.log', backupCount=3)
-        #formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        #handler.setFormatter(formatter)
-        #self.logger = logging.getLogger()
-        #self.logger.addHandler(handler)
+        # Logging
+        self.logger = logging.getLogger()
+        self.logger.setLevel(logging.INFO)
+        handler = RotatingFileHandler('marketplace.log', maxBytes=20000, backupCount=5)
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
 
     def register_producer(self):
         """
         Returns an id for the producer that calls this.
         """
+        self.logger.info("Producer registered")
+
         # Multiple producers may want to register at the same time
         self.register_lock.acquire()
         self.order_id_producer += 1
@@ -82,24 +83,21 @@ class Marketplace:
 
         :returns True or False. If the caller receives False, it should wait and then try again.
         """
+        self.logger.info("Product %s published by producer %s", product, producer_id)
 
         # The current producer has to wait until to publish again
         if self.producers[producer_id] >= self.queue_size_per_producer:
             return False
-
-        # Multiple producers may want to publish their products simultaneous
-        self.prod_lock.acquire()
 
         # Handle exception when the product is not in dictionary
         if product not in self.buffer:
             self.buffer[product] = []
         self.buffer[product].append(producer_id)
 
-        self.prod_lock.release()
-
         # The quantity of products published by the producer is increased
         self.producers[producer_id] = self.producers[producer_id] + 1
 
+        self.logger.info("Output for publish: TRUE for producer %s %s", producer_id, product)
         return True
 
 
@@ -110,6 +108,7 @@ class Marketplace:
         :returns an int representing the cart_id
         """
 
+        self.logger.info("New cart created")
         # Multiple consumers may want to create a cart at the same time
         self.cart_lock.acquire()
         self.cart_id += 1
@@ -133,15 +132,15 @@ class Marketplace:
 
         :returns True or False. If the caller receives False, it should wait and then try again
         """
+        self.logger.info("Add to cart input:  %s %s", cart_id, product)
 
         # Therse is no product of this type available
         if self.buffer.get(product) is None or len(self.buffer[product]) == 0:
+            self.logger.info("Add to cart output: FALSE %s %s", cart_id, product)
             return False
 
         # The product is no longer available
-        self.consume_lock.acquire()
         producer = self.buffer[product].pop(0)
-        self.consume_lock.release()
 
         # Add the product to the cart
         entry_pair = (producer, product)
@@ -150,6 +149,7 @@ class Marketplace:
         # The product was added to cart => his producer can produce more
         self.producers[producer] = self.producers[producer] - 1
 
+        self.logger.info("Add to cart output: TRUE %s %s", cart_id, product)
         return True
 
 
@@ -163,6 +163,7 @@ class Marketplace:
         :type product: Product
         :param product: the product to remove from cart
         """
+        self.logger.info("Remove from cart input:  %s %s", cart_id, product)
 
         # Remove the product from customer's cart
         for entry_pair in self.cart[cart_id]:
@@ -173,9 +174,7 @@ class Marketplace:
                 break
 
         # Make this product available for other customers
-        self.consume_lock.acquire()
         self.buffer[product].append(producer)
-        self.consume_lock.release()
 
         # This affects the producer => he has a production limit
         self.producers[producer] = self.producers[producer] + 1
@@ -188,6 +187,8 @@ class Marketplace:
         :type cart_id: Int
         :param cart_id: id cart
         """
+
+        self.logger.info("Place order input:  %s", cart_id)
         all_products = []
 
         # Extract the products from the cart
@@ -198,12 +199,12 @@ class Marketplace:
         # Remove the cart from the dictionary
         del self.cart[cart_id]
 
-        # Print the products
         for product in all_products:
             self.print_lock.acquire()
-            print(f"{currentThread().getName()} bought {product}")
+            print(currentThread().getName() +  " bought " + str(product))
             self.print_lock.release()
 
+        self.logger.info("Place order output:  %s", all_products)
         return all_products
 
 
@@ -230,7 +231,7 @@ class TestMarketplace(unittest.TestCase):
         "Test with 1 producer and 1 product expecting True"
 
         producer_id = self.market.register_producer()
-        green_tea = product.Tea("Matcha", 5, "green")
+        green_tea = Tea("Matcha", 5, "green")
 
         published = self.market.publish(producer_id, green_tea)
         self.assertTrue(published)
@@ -241,9 +242,9 @@ class TestMarketplace(unittest.TestCase):
         "Test with 1 producer, 3 products exeeds the limit of 2"
 
         producer_id = self.market.register_producer()
-        black_tea = product.Tea("Earl Grey", 5, "black")
-        berries_tea = product.Tea("Raspberry Tea", 5, "berries")
-        flat_white = product.Coffee("Flat White", 5, 5.05, "MEDIUM")
+        black_tea = Tea("Earl Grey", 5, "black")
+        berries_tea = Tea("Raspberry Tea", 5, "berries")
+        flat_white = Coffee("Flat White", 5, 5.05, "MEDIUM")
 
         self.market.publish(producer_id, black_tea)
         self.market.publish(producer_id, berries_tea)
@@ -257,8 +258,8 @@ class TestMarketplace(unittest.TestCase):
 
         producer_id1 = self.market.register_producer()
         producer_id2 = self.market.register_producer()
-        green_tea = product.Tea("Matcha", 5, "green")
-        ice_coffee = product.Coffee("Ice Coffee", 5, 4.05, "LOW")
+        green_tea = Tea("Matcha", 5, "green")
+        ice_coffee = Coffee("Ice Coffee", 5, 4.05, "LOW")
 
         self.market.publish(producer_id1, green_tea)
         self.market.publish(producer_id2, ice_coffee)
@@ -285,7 +286,7 @@ class TestMarketplace(unittest.TestCase):
         "Test that the product is not available in the buffer"
 
         cart_id = self.market.new_cart()
-        green_tea = product.Tea("Matcha", 5, "green")
+        green_tea = Tea("Matcha", 5, "green")
         added = self.market.add_to_cart(cart_id, green_tea)
 
         self.assertFalse(added)
@@ -295,7 +296,7 @@ class TestMarketplace(unittest.TestCase):
         "Test that the product is added to the cart and removed from the buffer"
 
         producer_id = self.market.register_producer()
-        green_tea = product.Tea("Matcha", 5, "green")
+        green_tea = Tea("Matcha", 5, "green")
         self.market.publish(producer_id, green_tea)
 
         cart_id = self.market.new_cart()
@@ -311,7 +312,7 @@ class TestMarketplace(unittest.TestCase):
         "Test that the product is removed from the cart and added back to the buffer"
 
         producer_id = self.market.register_producer()
-        green_tea = product.Tea("Matcha", 5, "green")
+        green_tea = Tea("Matcha", 5, "green")
         self.market.publish(producer_id, green_tea)
 
         cart_id = self.market.new_cart()
@@ -327,7 +328,7 @@ class TestMarketplace(unittest.TestCase):
         "Test that the cart is empty after the order is placed"
 
         producer_id = self.market.register_producer()
-        green_tea = product.Tea("Matcha", 5, "green")
+        green_tea = Tea("Matcha", 5, "green")
         self.market.publish(producer_id, green_tea)
 
         cart_id = self.market.new_cart()
@@ -344,8 +345,8 @@ class TestMarketplace(unittest.TestCase):
         producer_id1 = self.market.register_producer()
         producer_id2 = self.market.register_producer()
 
-        green_tea = product.Tea("Matcha", 5, "green")
-        ice_coffee = product.Coffee("Ice Coffee", 5, 4.05, "LOW")
+        green_tea = Tea("Matcha", 5, "green")
+        ice_coffee = Coffee("Ice Coffee", 5, 4.05, "LOW")
 
         self.market.publish(producer_id1, green_tea)
         self.market.publish(producer_id1, ice_coffee)

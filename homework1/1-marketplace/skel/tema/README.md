@@ -3,11 +3,16 @@
 
 ### I. Structure 
 
+#### Git repository: https://github.com/madalinazanficu/ASC
+The repository is private, so contact me while you are reviewing the code.
+
 The program follows the approach to the classical ***Multiple Producers -Multiple Consumers*** 
 problem from Parallel and Distributed algorithms.
 
 a. ***Homework utility*** <br/>
-    TODO:
+The program is a marketplace where producers can publish their products 
+and consumers can buy them. The main utility is to understand how parallel 
+progamming works in Python and how to synchronize threads.
 
 b. ***Design choices and code snipptes***                                       <br/>
 My solution is based on manipulating the data stuctures described below,      
@@ -47,28 +52,30 @@ the producer of that product because the product need to be inserted
 back in the **buffer** and the **producer** production limit is affected.
 
 **Mutex sitautions**:
-1. Multiple producers may want to publish their product in the same time.
-In order to do this they access **buffer[product]**, which is mapped
-with multiple producers.
+1. Multiple producers may want to register in the same time.
+In order to do this they need to increment the id_producer variable.
 
-self.consume_lock.acquire()                                                        <br/>
-self.buffer[product].append(producer)                                              <br/>
-self.consume_lock.release()                                                        <br/>
+self.register_lock.acquire()                <br/>
+self.order_id_producer += 1                 <br/>
+self.register_lock.release()                <br/>
 
-2. Multiple consumers may want to add to their cart the same product.
-The product is removed from **buffer[product]** => I need to make sure
-each consumer pop a different product.
+2. Multiple consumers may want to create a cart in the same time.
+In order to do this they need to increment the id_cart variable.
 
-self.consume_lock.acquire()                                                        <br/>
-producer = self.buffer[product].pop(0)                                             <br/>
-self.consume_lock.release()                                                        <br/>
+self.cart_lock.acquire()                    <br/>
+self.cart_id += 1                           <br/>
+self.cart_lock.release()                    <br/>
 
 3. While printing the products from the cart in place_order stage.
 
 
 c. ***Implementation efficiency***                                                <br/>
-    TODO:
+    In my original approach from Parallel and Distributed algorithms, I used
+    semaphores to synchronize the threads. In this approach, I used mutexes
+    due to the marketplace which mediates the communication between the
+    producers and the consumers and also beacuse all my data structures
+    are thread-safe.
 
-
-### II. Immplementation
-    TODO:
+### II. Implementation
+All the functionalities are implemented: code, unit tests, documentation
+and logging.
