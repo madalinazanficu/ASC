@@ -28,7 +28,6 @@ double* my_solver(int N, double *A, double *B) {
 	printf("BLAS SOLVER\n");
 
 	// Requested operation: C = A * B * At + Bt * Bt
-
 	double alpha = 1;
 	double beta = 1;
 
@@ -38,14 +37,14 @@ double* my_solver(int N, double *A, double *B) {
 		AB[i] = B[i];
 	}
 
-	cblas_dtrmm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, N, N, alpha, A, N, beta, AB);
+	cblas_dtrmm(CblasRowMajor, CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, N, N, alpha, A, N, beta, AB);
 
 	// ABAt devine AB = AB * At
-	cblas_dtrmm(CblasRight, CblasLower, CblasTrans, CblasNonUnit, N, N, alpha, A, N, beta, AB);
+	cblas_dtrmm(CblasRowMajor, CblasRight, CblasLower, CblasTrans, CblasNonUnit, N, N, alpha, A, N, beta, AB);
 
 	// BtBt = Bt * Bt
 	double *BtBt = malloc(N * N * sizeof(double));
-	blas_dgemm(CblasTrans, CblasTrans, N, N, N, alpha, B, N, B, N, beta, BtBt, N);
+	cblas_dgemm(CblasTrans, CblasTrans, N, N, N, alpha, B, N, B, N, beta, BtBt, N);
 
 
 	// ABAt + BtBt
