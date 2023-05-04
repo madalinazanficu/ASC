@@ -28,8 +28,8 @@ double* my_solver(int N, double *A, double *B) {
 	printf("BLAS SOLVER\n");
 
 	// Requested operation: C = A * B * At + Bt * Bt
-	double alpha = 1;
-	double beta = 1;
+	double alpha = 1.0;
+	double beta = 1.0;
 
 	// AB = A * B
 	double *AB = calloc(N * N, sizeof(double));
