@@ -32,7 +32,7 @@ double* my_solver(int N, double *A, double *B) {
 	double beta = 1;
 
 	// AB = A * B
-	double *AB = malloc(N * N * sizeof(double));
+	double *AB = calloc(N * N, sizeof(double));
 	for (int i = 0; i < N * N; i++) {
 		AB[i] = B[i];
 	}
@@ -43,7 +43,7 @@ double* my_solver(int N, double *A, double *B) {
 	cblas_dtrmm(CblasRowMajor, CblasRight, CblasLower, CblasTrans, CblasNonUnit, N, N, alpha, A, N, AB, N);
 
 	// BtBt = Bt * Bt
-	double *BtBt = malloc(N * N * sizeof(double));
+	double *BtBt = calloc(N * N, sizeof(double));
 	cblas_dgemm(CblasRowMajor, CblasTrans, CblasTrans, N, N, N, alpha, B, N, B, N, beta, BtBt, N);
 
 
