@@ -40,7 +40,7 @@ double* my_solver(int N, double *A, double *B) {
 	cblas_dtrmm(CblasRowMajor, CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, N, N, alpha, A, N, AB, N);
 
 	// ABAt devine AB = AB * At
-	cblas_dtrmm(CblasRowMajor, CblasRight, CblasLower, CblasTrans, CblasNonUnit, N, N, alpha, A, N, AB, N);
+	cblas_dtrmm(CblasRowMajor, CblasRight, CblasUpper, CblasTrans, CblasNonUnit, N, N, alpha, A, N, AB, N);
 
 	// BtBt = Bt * Bt
 	double *BtBt = calloc(N * N, sizeof(double));
