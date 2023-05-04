@@ -34,21 +34,22 @@ double* my_solver(int N, double *A, double *B) {
 
 	// AB = A * B
 	double *AB = malloc(N * N * sizeof(double));
-	for (int i = 0; i < n * n; i++) {
+	for (int i = 0; i < N * N; i++) {
 		AB[i] = B[i];
 	}
 
-	dtrmm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, N, N, alpha, A, N, beta, AB)
+	blas_dtrmm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, N, N, alpha, A, N, beta, AB);
 
 	// ABAt devine AB = AB * At
-	dtrmm(CblasRight, CblasLower, CblasTrans, CblasNonUnit, N, N, alpha, A, N, beta, AB);
+	blas_dtrmm(CblasRight, CblasLower, CblasTrans, CblasNonUnit, N, N, alpha, A, N, beta, AB);
 
 	// BtBt = Bt * Bt
 	double *BtBt = malloc(N * N * sizeof(double));
-	dgemm(CblasTrans, CblasTrans, N, N, N, alpha, B, N, B, N, beta, BtBt, N);
+	blas_dgemm(CblasTrans, CblasTrans, N, N, N, alpha, B, N, B, N, beta, BtBt, N);
 
 
 	// ABAt + BtBt
+	double *C = malloc(N * N * sizeof(double));
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
 			C[i * N + j] = AB[i * N + j] + BtBt[i * N + j];
