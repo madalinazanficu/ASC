@@ -38,10 +38,10 @@ double* my_solver(int N, double *A, double *B) {
 		AB[i] = B[i];
 	}
 
-	blas_dtrmm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, N, N, alpha, A, N, beta, AB);
+	cblas_dtrmm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, N, N, alpha, A, N, beta, AB);
 
 	// ABAt devine AB = AB * At
-	blas_dtrmm(CblasRight, CblasLower, CblasTrans, CblasNonUnit, N, N, alpha, A, N, beta, AB);
+	cblas_dtrmm(CblasRight, CblasLower, CblasTrans, CblasNonUnit, N, N, alpha, A, N, beta, AB);
 
 	// BtBt = Bt * Bt
 	double *BtBt = malloc(N * N * sizeof(double));
