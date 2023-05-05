@@ -1,7 +1,9 @@
 CC=gcc
 CFLAGS=-Wall -Werror -O0
-LIBDIRS=-L/usr/lib64/atlas
-LIBS=-lsatlas
+#LIBDIRS=-L/usr/lib64/atlas
+#LIBS=-lsatlas
+LIBDIRS=
+LIBS=
 
 all: compare tema2_blas tema2_neopt tema2_opt_m 
 
