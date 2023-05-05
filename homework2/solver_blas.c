@@ -48,17 +48,19 @@ double* my_solver(int N, double *A, double *B) {
 
 
 	// ABAt + BtBt
-	double *C = malloc(N * N * sizeof(double));
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			C[i * N + j] = AB[i * N + j] + BtBt[i * N + j];
-		}
-	}
+	// double *C = malloc(N * N * sizeof(double));
+	// for (int i = 0; i < N; i++) {
+	// 	for (int j = 0; j < N; j++) {
+	// 		C[i * N + j] = AB[i * N + j] + BtBt[i * N + j];
+	// 	}
+	// }
 
-	free_matrix(&AB);
+	// C devine AB = AB + BtBt
+	cblas_daxpy(N * N, alpha, BtBt, 1, AB, 1);
+
 	free_matrix(&BtBt);
 
-	return C;
+	return AB;
 }
 
 // /*
