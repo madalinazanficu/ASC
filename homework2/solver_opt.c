@@ -39,21 +39,34 @@ double *multiply_superior(double *A, double *B, int N) {
 
 	double *m = (double *)calloc(N * N, sizeof(double));
 
+	// for (int i = 0; i < N; i++) {
+	// 	for (int j = 0; j < N; j++) {
+
+	// 		register double sum = 0;
+	// 		double *a = A + i * N + i;
+	// 		double *b = B + i * N + j;
+
+	// 		for (int k = i; k < N; k++) {
+	// 			// sum += *(A + i * N + k) * *(B + k * N + j);
+	// 			sum += *a * *b;
+	// 			a++;
+	// 			b += N;
+	// 		}
+
+	// 		*(m + i * N + j) = sum;
+	// 	}
+	// }
 	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
+		// register int m_line = i * N;
 
-			register double sum = 0;
-			double *a = A + i * N + i;
-			double *b = B + i * N + j;
+		for (int k = i; k < N; k++) {
+			register double *a = A + i * N + k;
+			register double *b = B + k * N;
 
-			for (int k = i; k < N; k++) {
-				// sum += *(A + i * N + k) * *(B + k * N + j);
-				sum += *a * *b;
-				a++;
-				b += N;
+			for (int j = 0; j < N; j++) {
+				*(m + i * N + j) += *a * *b;
+				b++;
 			}
-
-			*(m + i * N + j) = sum;
 		}
 	}
 
@@ -67,10 +80,10 @@ double *multiply_inferior(double *A, double *B, int N) {
 
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
-			*(m + i * N + j) = 0;
+
 			register double sum = 0;
-			double *a = A + i * N + j;
-			double *b = B + j * N + j;
+			register double *a = A + i * N + j;
+			register double *b = B + j * N + j;
 
 			for (int k = j; k < N; k++) {
 				// *(m + i * N + j) += *(A + i * N + k) * *(B + k * N + j);
@@ -83,29 +96,64 @@ double *multiply_inferior(double *A, double *B, int N) {
 		}
 	}
 
+	// for (int i = 0; i < N; i++) {
+	// 	for (int k = 0; k < N; j++) {
+
+	// 		register double sum = 0;
+	// 		register double *a = A + i * N + j;
+	// 		// register double *b = B + j * N + j;
+	// 		register double *b = B + k * N + j;
+
+
+	// 		for (int k = j; k < N; k++) {
+	// 			// *(m + i * N + j) += *(A + i * N + k) * *(B + k * N + j);
+
+	// 			sum += *a * *b;
+	// 			a++;
+	// 			b += N;
+	// 		}
+	// 		*(m + i * N + j) = sum;
+	// 	}
+	// }
+
 	return m;
 }
 
 double *multiply_normal(double *A, double *B, int N) {
 
-	double *m = (double *)malloc(N * N * sizeof(double));
+	double *m = (double *)calloc(N * N, sizeof(double));
+
+	// for (int i = 0; i < N; i++) {
+	// 	for (int j = 0; j < N; j++) {
+	// 		*(m + i * N + j) = 0;
+
+	// 		register double sum = 0;
+	// 		double *a = A + i * N;
+	// 		double *b = B + j;
+
+	// 		for (int k = 0; k < N; k++) {
+	// 			// *(m + i * N + j) += *(A + i * N + k) * *(B + k * N + j);
+
+	// 			sum += *a * *b;
+	// 			a++;
+	// 			b += N;
+	// 		}
+	// 		*(m + i * N + j) = sum;
+	// 	}
+	// }
 
 	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			*(m + i * N + j) = 0;
+		for (int k = 0; k < N; k++) {
+			register double *a = A + i * N + k;
+			register double *b = B + k * N;
 
-			register double sum = 0;
-			double *a = A + i * N;
-			double *b = B + j;
-
-			for (int k = 0; k < N; k++) {
+			for (int j = 0; j < N; j++) {
 				// *(m + i * N + j) += *(A + i * N + k) * *(B + k * N + j);
 
-				sum += *a * *b;
-				a++;
-				b += N;
+				*(m + i * N + j) += *a * *b;
+				b++;
 			}
-			*(m + i * N + j) = sum;
+			// *(m + i * N + j) = sum;
 		}
 	}
 
