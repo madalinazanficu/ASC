@@ -97,9 +97,6 @@ double *multiply_normal(double *A, double *B, int N) {
 }
 
 
-/*
- * Add your optimized implementation here
- */
 double* my_solver(int N, double *A, double* B) {
 	printf("OPT SOLVER\n");
 
