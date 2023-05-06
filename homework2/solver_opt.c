@@ -139,25 +139,25 @@ double* my_solver(int N, double *A, double* B) {
 	TODO: delete main
 */
 
-int main() {
+// int main() {
 
-	int N = 3;
+// 	int N = 3;
 
-	double A1[3][3] = {{1.0, 2.0, 3.0}, {0.0, 4.0, 5.0}, {0.0, 0.0, 6.0}};
-	double B1[3][3] = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}};
-
-
-	double *A = &A1[0][0];
-	double *B = &B1[0][0];
+// 	double A1[3][3] = {{1.0, 2.0, 3.0}, {0.0, 4.0, 5.0}, {0.0, 0.0, 6.0}};
+// 	double B1[3][3] = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}};
 
 
-	double *C = my_solver(N, A, B);
-	if (C == NULL) {
-		printf("C is NULL\n");
-	} else {
-		print_matrix(C, N);
-		free(C);
-	}
+// 	double *A = &A1[0][0];
+// 	double *B = &B1[0][0];
 
-	return 0;
-}
+
+// 	double *C = my_solver(N, A, B);
+// 	if (C == NULL) {
+// 		printf("C is NULL\n");
+// 	} else {
+// 		print_matrix(C, N);
+// 		free(C);
+// 	}
+
+// 	return 0;
+// }
