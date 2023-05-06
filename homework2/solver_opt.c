@@ -100,8 +100,6 @@ double *multiply_inferior(double *A, double *B, int N) {
 
 	for (int i = 0; i < N; i++) {
 		for (int k = 0; k < N; k++) {
-
-			register double sum = 0;
 			register double *a = A + i * N + k;
 			register double *b = B + k * N;
 
