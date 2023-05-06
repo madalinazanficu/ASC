@@ -28,7 +28,7 @@ double* my_solver(int N, double *A, double *B) {
 	cblas_dtrmm(CblasRowMajor, CblasLeft, CblasUpper, CblasNoTrans,
 					CblasNonUnit, N, N, alpha, A, N, AB, N);
 
-	// ABAt devine AB = AB * At
+	// AB becomes ABAt = AB * At
 	cblas_dtrmm(CblasRowMajor, CblasRight, CblasUpper, CblasTrans,
 					CblasNonUnit, N, N, alpha, A, N, AB, N);
 
@@ -37,7 +37,7 @@ double* my_solver(int N, double *A, double *B) {
 	cblas_dgemm(CblasRowMajor, CblasTrans, CblasTrans,
 					N, N, N, alpha, B, N, B, N, beta, BtBt, N);
 
-	// C devine AB = AB + BtBt
+	// AB becomes C = AB + BtBt
 	cblas_daxpy(N * N, alpha, BtBt, 1, AB, 1);
 
 	free_matrix(&BtBt);
