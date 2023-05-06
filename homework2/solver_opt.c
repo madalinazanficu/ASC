@@ -11,8 +11,8 @@ void free_matrix(double **matrix) {
 }
 
 void print_matrix(double *matrix, int N) {
-	for (int i = 0; i != N; i++) {
-		for (int j = 0; j != N; j++) {
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
 			printf("%lf ", matrix[i * N + j]);
 		}
 		printf("\n");
@@ -24,7 +24,7 @@ double *get_transpose(double *matrix, int N) {
 
 	double *T = (double*) malloc(N * N * sizeof(double));
 
-	for (int i = 0; i != N; i++) {
+	for (int i = 0; i < N; i++) {
 		register double *t = T + i * N;
 		register double *m = matrix + i;
 
@@ -46,8 +46,8 @@ double *get_transpose(double *matrix, int N) {
 double *multiply_superior(double *A, double *B, int N) {
 
 	double *M = (double *)calloc(N * N, sizeof(double));
-	for (int i = 0; i != N; i++) {
-		for (int k = i; k != N; k++) {
+	for (int i = 0; i < N; i++) {
+		for (int k = i; k < N; k++) {
 			register double *a = A + i * N + k;
 			register double *b = B + k * N;
 			register double *m = M + i * N;
@@ -87,13 +87,13 @@ double *multiply_inferior(double *A, double *B, int N) {
 double *multiply_normal(double *A, double *B, int N) {
 
 	double *M = (double *)calloc(N * N, sizeof(double));
-	for (int i = 0; i != N; i++) {
-		for (int k = 0; k != N; k++) {
+	for (int i = 0; i < N; i++) {
+		for (int k = 0; k < N; k++) {
 			register double *a = A + i * N + k;
 			register double *b = B + k * N;
 			register double *m = M + i * N;
 
-			for (int j = 0; j != N; j++) {
+			for (int j = 0; j < N; j++) {
 				*m += *a * *b;
 				m++;
 				b++;
@@ -122,7 +122,7 @@ double* my_solver(int N, double *A, double* B) {
 
 	// Add the two matrices
 	double *C = (double *)malloc(N * N * sizeof(double));
-	for (int i = 0; i != N * N; i++) {
+	for (int i = 0; i < N * N; i++) {
 		C[i] = ABAt[i] + BtBt[i];
 	}
 
@@ -138,9 +138,9 @@ double* my_solver(int N, double *A, double* B) {
 }
 
 
-/*
-	TODO: delete main
-*/
+// /*
+// 	TODO: delete main
+// */
 
 // int main() {
 
