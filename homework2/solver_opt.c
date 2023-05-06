@@ -22,15 +22,23 @@ void print_matrix(double *matrix, int N) {
 
 double *get_transpose(double *matrix, int N) {
 
-	double *t = (double*) malloc(N * N * sizeof(double));
+	double *T = (double*) malloc(N * N * sizeof(double));
 
 	for (int i = 0; i < N; i++) {
+		register double *t = T + i * N;
+		register double *m = matrix + i;
+
 		for (int j = 0; j < N; j++) {
-			t[i * N + j] = matrix[j * N + i];
+			// t[i * N + j] = matrix[j * N + i];
+
+			*t = *m;
+			t++;
+			m += N;
+
 		}
 	}
 
-	return t;
+	return T;
 }
 
 
@@ -56,11 +64,9 @@ double *multiply_superior(double *A, double *B, int N) {
 }
 
 /* B inferior triunghiulara */
-void multiply_inferior(double *A, double *B, double *M, int N) {
+double *multiply_inferior(double *A, double *B, int N) {
 
-	// double *M = (double *)calloc(N * N, sizeof(double));
-
-
+	double *M = (double *)calloc(N * N, sizeof(double));
 	for (int i = 0; i < N; i++) {
 		for (int k = 0; k < N; k++) {
 			register double *a = A + i * N + k;
@@ -74,11 +80,13 @@ void multiply_inferior(double *A, double *B, double *M, int N) {
 			}
 		}
 	}
+
+	return M;
 }
 
-void multiply_normal(double *A, double *B, double *M, int N) {
+double *multiply_normal(double *A, double *B, int N) {
 
-	// double *M = (double *)calloc(N * N, sizeof(double));
+	double *M = (double *)calloc(N * N, sizeof(double));
 	for (int i = 0; i < N; i++) {
 		for (int k = 0; k < N; k++) {
 			register double *a = A + i * N + k;
@@ -93,13 +101,13 @@ void multiply_normal(double *A, double *B, double *M, int N) {
 		}
 	}
 
-	// return M;
+	return M;
 }
+
 
 
 /*
  * Add your optimized implementation here
- * Renunt la 3 alocari de memorie
  */
 double* my_solver(int N, double *A, double* B) {
 	printf("OPT SOLVER\n");
@@ -109,29 +117,24 @@ double* my_solver(int N, double *A, double* B) {
 
 	// C = A * B * At + Bt * Bt
 	double *AB = multiply_superior(A, B, N);
+	double *ABAt = multiply_inferior(AB, At, N);
+	double *BtBt = multiply_normal(Bt, Bt, N);
 
-
-	// A va contine ABAt 
-	multiply_inferior(AB, At, A, N);
-
-
-	// B va contine BtBt
-	multiply_normal(Bt, Bt, B, N);
-
-	// AB va contine adundarea C = ABAt + BtBt
-	// double *C = (double *)malloc(N * N * sizeof(double));
+	// Add the two matrices
+	double *C = (double *)malloc(N * N * sizeof(double));
 	for (int i = 0; i < N * N; i++) {
-		AB[i] = A[i] + B[i];
+		C[i] = ABAt[i] + BtBt[i];
 	}
+
 
 	// Final step : free all auxiliar matrices used
 	free_matrix(&At);
 	free_matrix(&Bt);
-	// free_matrix(&AB);
-	//free_matrix(&ABAt);
-	//free_matrix(&BtBt);
+	free_matrix(&AB);
+	free_matrix(&ABAt);
+	free_matrix(&BtBt);
 
-	return AB;	
+	return C;	
 }
 
 
