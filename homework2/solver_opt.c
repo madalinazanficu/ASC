@@ -37,7 +37,7 @@ double *get_transpose(double *matrix, int N) {
 /* A superior triunghiulara */
 double *multiply_superior(double *A, double *B, int N) {
 
-	double *m = (double *)calloc(N * N, sizeof(double));
+	double *M = (double *)calloc(N * N, sizeof(double));
 
 	// for (int i = 0; i < N; i++) {
 	// 	for (int j = 0; j < N; j++) {
@@ -62,15 +62,17 @@ double *multiply_superior(double *A, double *B, int N) {
 		for (int k = i; k < N; k++) {
 			register double *a = A + i * N + k;
 			register double *b = B + k * N;
+			register double *m = M + i * N;
 
 			for (int j = 0; j < N; j++) {
-				*(m + i * N + j) += *a * *b;
+				*m += *a * *b;
+				m++;
 				b++;
 			}
 		}
 	}
 
-	return m;
+	return M;
 }
 
 /* B inferior triunghiulara */
@@ -105,7 +107,8 @@ double *multiply_inferior(double *A, double *B, int N) {
 			register double *m = M + i * N;
 
 			for (int j = 0; j <= k; j++) {
-				*(m + j) += *a * *b;
+				*m += *a * *b;
+				m++;
 				b++;
 			}
 		}
@@ -116,7 +119,7 @@ double *multiply_inferior(double *A, double *B, int N) {
 
 double *multiply_normal(double *A, double *B, int N) {
 
-	double *m = (double *)calloc(N * N, sizeof(double));
+	double *M = (double *)calloc(N * N, sizeof(double));
 
 	// for (int i = 0; i < N; i++) {
 	// 	for (int j = 0; j < N; j++) {
@@ -141,18 +144,17 @@ double *multiply_normal(double *A, double *B, int N) {
 		for (int k = 0; k < N; k++) {
 			register double *a = A + i * N + k;
 			register double *b = B + k * N;
+			register double *m = M + i * N;
 
 			for (int j = 0; j < N; j++) {
-				// *(m + i * N + j) += *(A + i * N + k) * *(B + k * N + j);
-
-				*(m + i * N + j) += *a * *b;
+				*m += *a * *b;
+				m++;
 				b++;
 			}
-			// *(m + i * N + j) = sum;
 		}
 	}
 
-	return m;
+	return M;
 }
 
 
@@ -193,25 +195,25 @@ double* my_solver(int N, double *A, double* B) {
 	TODO: delete main
 */
 
-// int main() {
+int main() {
 
-// 	int N = 3;
+	int N = 3;
 
-// 	double A1[3][3] = {{1.0, 2.0, 3.0}, {0.0, 4.0, 5.0}, {0.0, 0.0, 6.0}};
-// 	double B1[3][3] = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}};
-
-
-// 	double *A = &A1[0][0];
-// 	double *B = &B1[0][0];
+	double A1[3][3] = {{1.0, 2.0, 3.0}, {0.0, 4.0, 5.0}, {0.0, 0.0, 6.0}};
+	double B1[3][3] = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}};
 
 
-// 	double *C = my_solver(N, A, B);
-// 	if (C == NULL) {
-// 		printf("C is NULL\n");
-// 	} else {
-// 		print_matrix(C, N);
-// 		free(C);
-// 	}
+	double *A = &A1[0][0];
+	double *B = &B1[0][0];
 
-// 	return 0;
-// }
+
+	double *C = my_solver(N, A, B);
+	if (C == NULL) {
+		printf("C is NULL\n");
+	} else {
+		print_matrix(C, N);
+		free(C);
+	}
+
+	return 0;
+}
