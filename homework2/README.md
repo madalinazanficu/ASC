@@ -56,15 +56,20 @@ Observations:
 **How the optimization of the opt version influces these values?**
 As we can see, the optimized version has less cache misses (Drefs), as my
 implementation uses the cache memory more efficiently.
-How? By using the matrix traversal: i-k-j, instead of i-j-k and matrix B is not traversed column by column, but row by row.
-Moreover, I have used register variables for matrix A, B and C pointers in order to reduce the number of RAM memory accesses and to have them closer to the CPU.
+How? By using the matrix traversal: i-k-j, instead of i-j-k 
+and matrix B is not traversed column by column, but row by row.
+Moreover, I have used register variables for matrix A, B and C 
+pointers in order to reduce the number of RAM memory accesses 
+and to have them closer to the CPU.
 
-I think that I refs value is much lower considering that my neopt version has
+I think that I_refs value is much lower considering that my neopt version has
 excesevly used this kind operation: m + i * N + j, but my optimized version has
 more "atomic" kind of operations like: m++ and b++ for matrix traversal, 
 which in assembly code are translated into a single instruction.
 
 #### TODO: Task 5 - performance analysis of the 3 versions
+
+<img src ="performance.png" style = "height: 400px; width:500px;"/>
 
 
 
