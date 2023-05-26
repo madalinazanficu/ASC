@@ -48,6 +48,8 @@ GpuHashTable::GpuHashTable(int size) {
 	if (this->buckets == NULL) {
 		printf("Could not allocate memory");
 	}
+
+	cout << "Dupa cudaMalloc" << endl;
 }
 
 /**
