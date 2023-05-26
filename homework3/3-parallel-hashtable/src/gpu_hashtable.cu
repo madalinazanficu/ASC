@@ -95,8 +95,10 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 	int key = keys[index];
 	int val = value[index];
 	int pos = hash_function_int(&key) % hmax;
+	int curr_pos = 0, ref_pos = 0;
+	bool stop = false;
 
-	switch buckets[pos].key {
+	switch (buckets[pos].key) {
 	
 	// Empty bucket => insert key:value
 	case 0:
@@ -113,9 +115,9 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 	default:
 		
 		// Case 3.0: key already exists but in another bucket => update value
-		int ref_pos = pos;
-		int curr_pos = (pos + 1) % hmmax;
-		bool stop = false;
+		ref_pos = pos;
+		curr_pos = (pos + 1) % hmmax;
+		stop = false;
 		while (curr_pos != ref_pos) {
 			if (buckets[curr_pos].key == key) {
 				buckets[curr_pos].value = val;
@@ -168,7 +170,7 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
 	int pos = hash_function_int(&key) % hmax;
 	int result = 0;
 
-	switch buckets[pos].key {
+	switch (buckets[pos].key) {
 	
 	// The key is in the right bucket
 	case key:
