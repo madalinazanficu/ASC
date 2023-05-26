@@ -166,10 +166,10 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 										this->size, this->hmax);
 	cudaDeviceSynchronize();
 
-	for (int i = 0; i < this->size; i++) {
-		printf("%d: %d\n", this->buckets[i].key, this->buckets[i].value);
-	}
-	cout << endl;
+	// for (int i = 0; i < this->size; i++) {
+	// 	printf("%d: %d\n", this->buckets[i].key, this->buckets[i].value);
+	// }
+	// cout << endl;
 
 	this->size += numKeys;
 	return true;
