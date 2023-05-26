@@ -93,6 +93,9 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 								struct data *buckets, int size, int hmax) {
 
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	if (index >= numKeys) {
+		return;
+	}
 
 	int key = keys[index];
 	int val = value[index];
@@ -172,6 +175,11 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
 										int size, int hmax, int *result_vec) {
     
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	if (index >= num) {
+		return;
+	}
+
+
 	int key = keys[index];
 	int pos = hash_function_int(&key) % hmax;
 	int result = 0;
@@ -236,6 +244,10 @@ __global__ void kernel_get_keys(int numKeys, struct data *buckets,
 									int size, int hmax, int *result_vec) {
 	
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	if (index >= numKeys) {
+		return;
+	}
+
 	int key = buckets[index].key;
 
 	if (key != 0) {
