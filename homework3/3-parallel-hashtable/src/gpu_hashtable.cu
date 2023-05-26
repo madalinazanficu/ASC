@@ -103,6 +103,8 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 	int curr_pos = 0, ref_pos = 0;
 	bool stop = false;
 
+	cout << "key: " << key << " val: " << val << " pos: " << pos << endl;
+
 	switch (buckets[pos].key) {
 	
 	// Case 1: Empty bucket => insert key:value
@@ -151,8 +153,6 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
  * Inserts a batch of key:value, using GPU and wrapper allocators
  */
 bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
-
-	cout << "Inserting batch" << endl;
 
 	int available_space = this->hmax - this->size;
 
@@ -209,9 +209,6 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
  * Gets a batch of key:value, using GPU
  */
 int* GpuHashTable::getBatch(int* keys, int numKeys) {
-
-	cout << "Getting batch" << endl;
-
 	int blocks = numKeys / 256;
 	int threads = 256;
 
@@ -258,8 +255,6 @@ __global__ void kernel_get_keys(int numKeys, struct data *buckets,
 }
 
 int* GpuHashTable::getAllKeys(int numKeys) {
-	
-	cout << "Getting all keys" << endl;
 
 	int blocks = numKeys / 256;
 	int threads = 256;
