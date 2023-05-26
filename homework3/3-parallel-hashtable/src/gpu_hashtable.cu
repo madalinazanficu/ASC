@@ -77,6 +77,7 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 	// Update the hashtable fields
 	this->hmax = numBucketsReshape;
 	this->buckets = new_buckets;
+	this->size = 0;
 
 	// Insert all the elements from the old buckets to the new one
 	insertBatch(keys, values, this->size);
