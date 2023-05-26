@@ -103,8 +103,6 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 	int curr_pos = 0, ref_pos = 0;
 	bool stop = false;
 
-	cout << "key: " << key << " val: " << val << " pos: " << pos << endl;
-
 	switch (buckets[pos].key) {
 	
 	// Case 1: Empty bucket => insert key:value
@@ -166,6 +164,11 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	int threads = 256;
 	kernel_insert<<<blocks, threads>>>(keys, values, numKeys, this->buckets,
 										this->size, this->hmax);
+
+	for (int i = 0; i < numKeys; i++) {
+		cout << keys[i] << " " << values[i] << endl;
+	}
+	cout << endl;
 
 	this->size += numKeys;
 	return true;
