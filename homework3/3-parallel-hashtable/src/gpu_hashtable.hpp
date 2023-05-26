@@ -18,7 +18,7 @@ class GpuHashTable
 
 		bool insertBatch(int *keys, int* values, int numKeys);
 		int* getBatch(int* key, int numItems);
-		int* getAllKeys(int* numKeys);
+		int* getAllKeys(int numKeys);
 
 		~GpuHashTable();
 };
