@@ -46,6 +46,7 @@ GpuHashTable::GpuHashTable(int size) {
 	if (this->buckets == NULL) {
 		printf("Could not allocate memory");
 	}
+	printf("In constructor\n");
 }
 
 /**
@@ -66,11 +67,6 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 	struct data *new_buckets = NULL;
 	glbGpuAllocator->_cudaMalloc((void **)&new_buckets,
 									numBucketsReshape * sizeof(struct data));
-
-	// Copy data from old buckets to new buckets
-	// glbGpuAllocator->_cudaMemcpy(new_buckets, this->buckets,
-	// 								this->size * sizeof(struct data),
-	// 								cudaMemcpyDeviceToDevice);
 
 	cudaMemcpy(new_buckets, this->buckets,
 				this->size * sizeof(struct data),
@@ -105,9 +101,6 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 		buckets[pos].key = key;
 		buckets[pos].value = val;
 		break;
-	// case key:
-	// 	buckets[pos].value = val;
-	// 	break;
 
 	// Collision
 	default:
@@ -163,6 +156,7 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	kernel_insert<<<blocks, threads>>>(keys, values, numKeys, this->buckets,
 										this->size, this->hmax);
 
+	this->size += numKeys;
 	return true;
 }
 
