@@ -144,6 +144,8 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
  */
 bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 
+	cout << "Inserting batch" << endl;
+
 	int available_space = this->hmax - this->size;
 
 	// In case of not enough space, resize the hashtable
@@ -194,6 +196,8 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
  * Gets a batch of key:value, using GPU
  */
 int* GpuHashTable::getBatch(int* keys, int numKeys) {
+
+	cout << "Getting batch" << endl;
 
 	int blocks = numKeys / 256;
 	int threads = 256;
