@@ -41,8 +41,8 @@ GpuHashTable::GpuHashTable(int size) {
 	this->hmax = size;
 	this->buckets = NULL;
 
-	printf("In constructor\n");
-	
+	cout << "Merg in centru" << endl;
+
 	// Allocate memory (GPU/VRAM) for buckets
 	glbGpuAllocator->_cudaMalloc((void **)&this->buckets, size * sizeof(struct data));
 	if (this->buckets == NULL) {
