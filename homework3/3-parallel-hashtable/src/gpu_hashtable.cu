@@ -164,9 +164,10 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	int threads = 256;
 	kernel_insert<<<blocks, threads>>>(keys, values, numKeys, this->buckets,
 										this->size, this->hmax);
+	cudaDeviceSynchronize();
 
-	for (int i = 0; i < numKeys; i++) {
-		cout << keys[i] << " " << values[i] << endl;
+	for (int i = 0; i < this->size; i++) {
+		printf("%d: %d\n", this->buckets[i].key, this->buckets[i].value);
 	}
 	cout << endl;
 
@@ -224,6 +225,7 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 	kernel_get_batch<<<blocks, threads>>>(keys, numKeys, this->buckets,
 										this->size, this->hmax, result_vec_gpu);
 
+	cudaDeviceSynchronize();
 
 	// The returned result vector will be copied from GPU memory to host memory
 	int *result_vec_cpu = (int *)malloc(numKeys * sizeof(int));
@@ -269,6 +271,7 @@ int* GpuHashTable::getAllKeys(int numKeys) {
 	// Each CPU kernel will write the result in the result vector
 	kernel_get_keys<<<blocks, threads>>>(numKeys, this->buckets,
 										this->size, this->hmax, result_vec_gpu);
+	cudaDeviceSynchronize();
 
 	int *result_vec_cpu = (int *)malloc(numKeys * sizeof(int));
 	cudaMemcpy(result_vec_cpu, result_vec_gpu,
