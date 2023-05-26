@@ -11,7 +11,7 @@
 
 using namespace std;
 
-unsigned int hash_function_int(void *a)
+__host__ __device__ unsigned int hash_function_int(void *a)
 {
 	/*
 	 * Credits: https://stackoverflow.com/a/12996028/7883884
