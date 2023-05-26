@@ -122,6 +122,8 @@ int main(int argc, char **argv)
 	vector<int> vecValues;
 	int *valuesGot = NULL;
 
+	printf("Running homework...\n");
+
 	DIE(argc != 4,
 		"ERR, args num, call ./bin test_numKeys test_numChunks hash_speed");
 
