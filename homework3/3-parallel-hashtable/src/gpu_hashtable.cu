@@ -41,12 +41,13 @@ GpuHashTable::GpuHashTable(int size) {
 	this->hmax = size;
 	this->buckets = NULL;
 
+	printf("In constructor\n");
+	
 	// Allocate memory (GPU/VRAM) for buckets
 	glbGpuAllocator->_cudaMalloc((void **)&this->buckets, size * sizeof(struct data));
 	if (this->buckets == NULL) {
 		printf("Could not allocate memory");
 	}
-	printf("In constructor\n");
 }
 
 /**
