@@ -41,15 +41,11 @@ GpuHashTable::GpuHashTable(int size) {
 	this->hmax = size;
 	this->buckets = NULL;
 
-	cout << "Merg in centru" << endl;
-
 	// Allocate memory (GPU/VRAM) for buckets
 	glbGpuAllocator->_cudaMalloc((void **)&(this->buckets), size * sizeof(struct data));
 	if (this->buckets == NULL) {
 		printf("Could not allocate memory");
 	}
-
-	cout << "Dupa cudaMalloc" << endl;
 }
 
 /**
@@ -70,17 +66,23 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 	struct data *new_buckets = NULL;
 	glbGpuAllocator->_cudaMalloc((void **)&(new_buckets),
 									numBucketsReshape * sizeof(struct data));
+	
+	// Save the reference of the old buckets
+	struct data *old_buckets = this->buckets;
 
-	cudaMemcpy(new_buckets, this->buckets,
-				this->size * sizeof(struct data),
-				cudaMemcpyDeviceToDevice);
+	// Get all the keys and values from the old buckets
+	int *keys = getAllKeys(this->size);
+	int *values = getBatch(keys, this->size);
+
+	// Update the hashtable fields
+	this->hmax = numBucketsReshape;
+	this->buckets = new_buckets;
+
+	// Insert all the elements from the old buckets to the new one
+	insertBatch(keys, values, this->size);
 
 	// Free old buckets
-	glbGpuAllocator->_cudaFree(this->buckets);
-
-	// Update hashtable fields
-	this->buckets = new_buckets;
-	this->hmax = numBucketsReshape;
+	glbGpuAllocator->_cudaFree(old_buckets);
 
 	return;
 }
@@ -216,14 +218,54 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 
 	// The returned result vector will be copied from GPU memory to host memory
 	int *result_vec_cpu = (int *)malloc(numKeys * sizeof(int));
-	// glbGpuAllocator->_cudaMemcpy(result_vec_cpu, result_vec_gpu,
-	// 								numKeys * sizeof(int),cudaMemcpyDeviceToHost);
-
 	cudaMemcpy(result_vec_cpu, result_vec_gpu,
 				numKeys * sizeof(int),cudaMemcpyDeviceToHost);
 	
 	// Free memory (GPU/VRAM) for result vector
 	glbGpuAllocator->_cudaFree(result_vec_gpu);
 
+
+	// Final result from RAM
+	return result_vec_cpu;
+}
+
+
+
+__global__ void kernel_get_keys(int numKeys, struct data *buckets,
+									int size, int hmax, int *result_vec) {
+	
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	int key = buckets[index].key;
+
+	if (key != 0) {
+		result_vec[index] = key;
+	}
+		
+	return;
+}
+
+int *GpuHashTable::getAllKeys(int numKeys) {
+	
+	cout << "Getting all keys" << endl;
+
+	int blocks = numKeys / 256;
+	int threads = 256;
+
+	// Allocate memory (GPU/VRAM) for result vector
+	int *result_vec_gpu = NULL;
+	glbGpuAllocator->_cudaMalloc((void **)&(result_vec_gpu), numKeys * sizeof(int));
+
+	// Each CPU kernel will write the result in the result vector
+	kernel_get_keys<<<blocks, threads>>>(numKeys, this->buckets,
+										this->size, this->hmax, result_vec_gpu);
+
+	int *result_vec_cpu = (int *)malloc(numKeys * sizeof(int));
+	cudaMemcpy(result_vec_cpu, result_vec_gpu,
+				numKeys * sizeof(int),cudaMemcpyDeviceToHost);
+
+	// Free memory (GPU/VRAM) for result vector
+	glbGpuAllocator->_cudaFree(result_vec_gpu);
+
+	// Final result from RAM
 	return result_vec_cpu;
 }
