@@ -244,7 +244,7 @@ __global__ void kernel_get_keys(int numKeys, struct data *buckets,
 	return;
 }
 
-int *GpuHashTable::getAllKeys(int numKeys) {
+int* GpuHashTable::getAllKeys(int numKeys) {
 	
 	cout << "Getting all keys" << endl;
 
