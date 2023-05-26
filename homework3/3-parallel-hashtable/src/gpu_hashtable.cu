@@ -11,7 +11,7 @@
 
 using namespace std;
 
-__global__ unsigned int hash_function_int(void *a)
+unsigned int hash_function_int(void *a)
 {
 	/*
 	 * Credits: https://stackoverflow.com/a/12996028/7883884
@@ -68,9 +68,13 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 									numBucketsReshape * sizeof(struct data));
 
 	// Copy data from old buckets to new buckets
-	glbGpuAllocator->_cudaMemcpy(new_buckets, this->buckets,
-									this->size * sizeof(struct data),
-									cudaMemcpyDeviceToDevice);
+	// glbGpuAllocator->_cudaMemcpy(new_buckets, this->buckets,
+	// 								this->size * sizeof(struct data),
+	// 								cudaMemcpyDeviceToDevice);
+
+	cudaMemcpy(new_buckets, this->buckets,
+				this->size * sizeof(struct data),
+				cudaMemcpyDeviceToDevice);
 
 	// Free old buckets
 	glbGpuAllocator->_cudaFree(this->buckets);
@@ -208,9 +212,11 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 
 	// The returned result vector will be copied from GPU memory to host memory
 	int result_vec_cpu = malloc(numKeys * sizeof(int));
-	glbGpuAllocator->_cudaMemcpy(result_vec_cpu, result_vec_gpu,
-									numKeys * sizeof(int),cudaMemcpyDeviceToHost);
-	
+	// glbGpuAllocator->_cudaMemcpy(result_vec_cpu, result_vec_gpu,
+	// 								numKeys * sizeof(int),cudaMemcpyDeviceToHost);
+
+	cudaMemcpy(result_vec_cpu, result_vec_gpu,
+				numKeys * sizeof(int),cudaMemcpyDeviceToHost);
 	
 	// Free memory (GPU/VRAM) for result vector
 	glbGpuAllocator->_cudaFree(result_vec_gpu);
