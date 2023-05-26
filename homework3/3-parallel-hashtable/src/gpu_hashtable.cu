@@ -100,21 +100,25 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 
 	switch (buckets[pos].key) {
 	
-	// Empty bucket => insert key:value
+	// Case 1: Empty bucket => insert key:value
 	case 0:
 		buckets[pos].key = key;
 		buckets[pos].value = val;
 		break;
-
-	// Key already exists => update value
-	case key:
-		buckets[pos].value = val;
-		break;
+	// case key:
+	// 	buckets[pos].value = val;
+	// 	break;
 
 	// Collision
 	default:
+
+		// Case 2:  Key already exists => update value
+		if (buckets[pos].key == key) {
+			buckets[pos].value = val;
+			break;
+		}
 		
-		// Case 3.0: key already exists but in another bucket => update value
+		// Case 3: key already exists but in another bucket => update value
 		ref_pos = pos;
 		curr_pos = (pos + 1) % hmax;
 		stop = false;
@@ -130,7 +134,7 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 			break;
 		}
 
-		// Case 3.1: find the next available slot
+		// Case 4: find the next available slot
 		while (buckets[pos].key != 0) {
 			pos = (pos + 1) % size;
 		}
@@ -170,27 +174,24 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
 	int pos = hash_function_int(&key) % hmax;
 	int result = 0;
 
-	switch (buckets[pos].key) {
-	
-	// The key is in the right bucket
-	case key:
+	if (buckets[pos].key == key) {
 		result = buckets[pos].value;
-		break;
+		result_vec[index] = result;
+		return;
+	}
 
-	// A collision occured, so we need to search for the key
-	default:
-		int ref_pos = pos;
-		int curr_pos = (pos + 1) % hmmax;
-		while (curr_pos != ref_pos) {
-			if (buckets[curr_pos].key == key) {
-				result = buckets[curr_pos].value;
-				break;
-			}
-			curr_pos = (curr_pos + 1) % size;
+	int ref_pos = pos;
+	int curr_pos = (pos + 1) % hmax;
+	while (curr_pos != ref_pos) {
+		if (buckets[curr_pos].key == key) {
+			result = buckets[curr_pos].value;
+			break;
 		}
-		break;
+		curr_pos = (curr_pos + 1) % size;
 	}
 	result_vec[index] = result;
+		
+	return;
 }
 
 /**
@@ -213,7 +214,7 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 
 
 	// The returned result vector will be copied from GPU memory to host memory
-	int *result_vec_cpu = malloc(numKeys * sizeof(int));
+	int *result_vec_cpu = (int *)malloc(numKeys * sizeof(int));
 	// glbGpuAllocator->_cudaMemcpy(result_vec_cpu, result_vec_gpu,
 	// 								numKeys * sizeof(int),cudaMemcpyDeviceToHost);
 
