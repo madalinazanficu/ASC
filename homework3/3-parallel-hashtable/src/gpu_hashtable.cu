@@ -44,7 +44,7 @@ GpuHashTable::GpuHashTable(int size) {
 	cout << "Merg in centru" << endl;
 
 	// Allocate memory (GPU/VRAM) for buckets
-	glbGpuAllocator->_cudaMalloc((void **)&this->buckets, size * sizeof(struct data));
+	glbGpuAllocator->_cudaMalloc((void **)&(this->buckets), size * sizeof(struct data));
 	if (this->buckets == NULL) {
 		printf("Could not allocate memory");
 	}
