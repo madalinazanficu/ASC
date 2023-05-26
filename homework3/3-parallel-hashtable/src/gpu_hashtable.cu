@@ -42,7 +42,7 @@ GpuHashTable::GpuHashTable(int size) {
 	this->buckets = NULL;
 
 	// Allocate memory (GPU/VRAM) for buckets
-	glbGpuAllocator->_cudaMalloc((void *)&this->buckets, size * sizeof(struct data));
+	glbGpuAllocator->_cudaMalloc((void **)&this->buckets, size * sizeof(struct data));
 	if (this->buckets == NULL) {
 		printf("Could not allocate memory");
 	}
@@ -64,7 +64,7 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 
 	// Allocate new memory (GPU/VRAM) for more buckets
 	struct data *new_buckets = NULL;
-	glbGpuAllocator->_cudaMalloc((void *)&new_buckets,
+	glbGpuAllocator->_cudaMalloc((void **)&new_buckets,
 									numBucketsReshape * sizeof(struct data));
 
 	// Copy data from old buckets to new buckets
@@ -116,7 +116,7 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 		
 		// Case 3.0: key already exists but in another bucket => update value
 		ref_pos = pos;
-		curr_pos = (pos + 1) % hmmax;
+		curr_pos = (pos + 1) % hmax;
 		stop = false;
 		while (curr_pos != ref_pos) {
 			if (buckets[curr_pos].key == key) {
@@ -204,7 +204,7 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 
 	// Allocate memory (GPU/VRAM) for result vector
 	int *result_vec_gpu = NULL;
-	glbGpuAllocator->_cudaMalloc((void *)&result_vec, numKeys * sizeof(int));
+	glbGpuAllocator->_cudaMalloc((void **)&result_vec_gpu, numKeys * sizeof(int));
 
 
 	// Each CPU kernel will write the result in the result vector
@@ -213,7 +213,7 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 
 
 	// The returned result vector will be copied from GPU memory to host memory
-	int result_vec_cpu = malloc(numKeys * sizeof(int));
+	int *result_vec_cpu = malloc(numKeys * sizeof(int));
 	// glbGpuAllocator->_cudaMemcpy(result_vec_cpu, result_vec_gpu,
 	// 								numKeys * sizeof(int),cudaMemcpyDeviceToHost);
 
