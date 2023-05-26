@@ -68,7 +68,7 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 
 	// Allocate new memory (GPU/VRAM) for more buckets
 	struct data *new_buckets = NULL;
-	glbGpuAllocator->_cudaMalloc((void **)&new_buckets,
+	glbGpuAllocator->_cudaMalloc((void **)&(new_buckets),
 									numBucketsReshape * sizeof(struct data));
 
 	cudaMemcpy(new_buckets, this->buckets,
@@ -206,7 +206,7 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 
 	// Allocate memory (GPU/VRAM) for result vector
 	int *result_vec_gpu = NULL;
-	glbGpuAllocator->_cudaMalloc((void **)&result_vec_gpu, numKeys * sizeof(int));
+	glbGpuAllocator->_cudaMalloc((void **)&(result_vec_gpu), numKeys * sizeof(int));
 
 
 	// Each CPU kernel will write the result in the result vector
