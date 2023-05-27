@@ -61,7 +61,7 @@ GpuHashTable::~GpuHashTable() {
 }
 
 
-_global__ void kernel_resize(struct data *old_buckets, struct data *new_buckets, int size, int old_hmax, int new_hmax) {
+__global__ void kernel_resize(struct data *old_buckets, struct data *new_buckets, int size, int old_hmax, int new_hmax) {
 
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	if (index >= size) {
