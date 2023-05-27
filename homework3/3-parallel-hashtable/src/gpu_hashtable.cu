@@ -176,11 +176,6 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 		this->reshape(new_size);
 	}
 
-	cout << "New hmax: " << this->hmax << endl;
-	cout << "Num keys: " << numKeys << endl;
-	cout << "New size: " << this->hmax << endl;
-	cout << "New factor: " << new_factor << endl;
-
 	// Allocate memory on GPU for keys and values
 	int *d_keys = NULL;
 	int *d_values = NULL;
@@ -199,6 +194,11 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	cudaDeviceSynchronize();
 
 	this->size += numKeys;
+
+	cout << "New hmax: " << this->hmax << endl;
+	cout << "Num keys: " << numKeys << endl;
+	cout << "New size: " << this->size << endl;
+	cout << "New factor: " << new_factor << endl;
 
 	//cout << "End of insertBatch" << endl;
 	return true;
