@@ -252,9 +252,13 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 	int *result_vec_gpu = NULL;
 	glbGpuAllocator->_cudaMalloc((void **)&(result_vec_gpu), numKeys * sizeof(int));
 
+	// Allocate memory (GPU/VRAM) for keys
+	int *d_keys = NULL;
+	glbGpuAllocator->_cudaMalloc((void **)&(d_keys), numKeys * sizeof(int));
+	cudaMemcpy(d_keys, keys, numKeys * sizeof(int), cudaMemcpyHostToDevice);
 
 	// Each CPU kernel will write the result in the result vector
-	kernel_get_batch<<<blocks, threads>>>(keys, numKeys, this->buckets,
+	kernel_get_batch<<<blocks, threads>>>(d_keys, numKeys, this->buckets,
 										this->size, this->hmax, result_vec_gpu);
 
 	cudaDeviceSynchronize();
