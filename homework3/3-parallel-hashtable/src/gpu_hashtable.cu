@@ -80,6 +80,7 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 	// Get all the keys and values from the old buckets
 	int *keys = getAllKeys(this->size);
 	int *values = getBatch(keys, this->size);
+	int num_keys = this->size;
 
 	// Update the hashtable fields
 	this->hmax = numBucketsReshape;
@@ -87,7 +88,7 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 	this->size = 0;
 
 	// Insert all the elements from the old buckets to the new one
-	insertBatch(keys, values, this->size);
+	insertBatch(keys, values, num_keys);
 
 	// Free old buckets
 	glbGpuAllocator->_cudaFree(old_buckets);
