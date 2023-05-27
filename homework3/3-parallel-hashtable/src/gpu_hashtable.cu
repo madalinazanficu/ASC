@@ -155,7 +155,7 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 
 	// In case of not enough space, resize the hashtable
 	if (available_space <= numKeys) {
-		int new_size = (this->hmax + numKeys) * 4;
+		int new_size = (this->hmax + numKeys) * 3;
 		this->reshape(new_size);
 	}
 
