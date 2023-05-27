@@ -204,16 +204,22 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 		this->reshape(new_size);
 	}
 
+	// Allocate memory on GPU for keys and values
+	int *d_keys = NULL;
+	int *d_values = NULL;
+	glbGpuAllocator->_cudaMalloc((void **)&(d_keys), numKeys * sizeof(int));
+	cudaMemcpy(d_keys, keys, numKeys * sizeof(int), cudaMemcpyHostToDevice);
+
+	glbGpuAllocator->_cudaMalloc((void **)&(d_values), numKeys * sizeof(int));
+	cudaMemcpy(d_values, values, numKeys * sizeof(int), cudaMemcpyHostToDevice);
+
+
+	// Insert the batch of keys and values
 	int blocks = numKeys / 256;
 	int threads = 256;
 	kernel_insert<<<blocks, threads>>>(keys, values, numKeys, this->buckets,
 										this->size, this->hmax);
 	cudaDeviceSynchronize();
-
-	// for (int i = 0; i < this->size; i++) {
-	// 	printf("%d: %d\n", this->buckets[i].key, this->buckets[i].value);
-	// }
-	// cout << endl;
 
 	this->size += numKeys;
 	return true;
