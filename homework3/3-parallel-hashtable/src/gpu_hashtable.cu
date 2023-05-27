@@ -42,10 +42,15 @@ GpuHashTable::GpuHashTable(int size) {
 	this->buckets = NULL;
 
 	// Allocate memory (GPU/VRAM) for buckets
+
+	cout << "In constructor" << endl;
+
 	glbGpuAllocator->_cudaMalloc((void **)&(this->buckets), size * sizeof(struct data));
 	if (this->buckets == NULL) {
 		printf("Could not allocate memory");
 	}
+
+	cout << "End of constructor" << endl;
 }
 
 /**
@@ -151,6 +156,8 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
  * Inserts a batch of key:value, using GPU and wrapper allocators
  */
 bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
+
+	cout << "In insertBatch" << endl;
 
 	int available_space = this->hmax - this->size;
 
