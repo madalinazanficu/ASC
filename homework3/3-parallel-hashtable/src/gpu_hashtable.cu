@@ -117,7 +117,7 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 	if (compare_and_swap == 0 || compare_and_swap == key) {
 		buckets[pos].value = val;
 		return;
-		
+
 	} else {
 		// Case 2: key already exists but in another bucket
 		ref_pos = pos;
@@ -126,8 +126,8 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 		while (curr_pos != ref_pos) {
 			if (buckets[curr_pos].key == key) {
 				buckets[curr_pos].value = val;
-				break;
 				stop = true;
+				break;
 			}
 			curr_pos = (curr_pos + 1) % size;
 		}
