@@ -141,51 +141,6 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 		}
 		buckets[pos].value = val;
 	}
-
-
-
-
-	// switch (buckets[pos].key) {
-	
-	// // Case 1: Empty bucket => insert key:value
-	// case 0:
-	// 	buckets[pos].key = key;
-	// 	buckets[pos].value = val;
-	// 	break;
-
-	// // Collision
-	// default:
-
-	// 	// Case 2:  Key already exists => update value
-	// 	if (buckets[pos].key == key) {
-	// 		buckets[pos].value = val;
-	// 		break;
-	// 	}
-		
-	// 	// Case 3: key already exists but in another bucket => update value
-	// 	ref_pos = pos;
-	// 	curr_pos = (pos + 1) % hmax;
-	// 	stop = false;
-	// 	while (curr_pos != ref_pos) {
-	// 		if (buckets[curr_pos].key == key) {
-	// 			buckets[curr_pos].value = val;
-	// 			stop = true;
-	// 			break;
-	// 		}
-	// 		curr_pos = (curr_pos + 1) % size;
-	// 	}
-	// 	if (stop == true) {
-	// 		break;
-	// 	}
-
-	// 	// Case 4: find the next available slot
-	// 	while (buckets[pos].key != 0) {
-	// 		pos = (pos + 1) % size;
-	// 	}
-	// 	buckets[pos].key = key;
-	// 	buckets[pos].value = val;
-	// 	break;
-	// }
 }
 
 /**
