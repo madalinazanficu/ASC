@@ -81,7 +81,7 @@ __global__ void kernel_resize(struct data *old_buckets, struct data *new_buckets
 	} else {
 		// Case1 : Collision => find the next empty bucket
 		while (atomicCAS(&(new_buckets[pos].key), 0, key) != 0) {
-			pos = (pos + 1) % hmax;
+			pos = (pos + 1) % new_hmax;
 		}
 		new_buckets[pos].value = val;
 	}
