@@ -189,7 +189,7 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	// Insert the batch of keys and values
 	int blocks = numKeys / 256;
 	int threads = 256;
-	kernel_insert<<<blocks, threads>>>(keys, values, numKeys, this->buckets,
+	kernel_insert<<<blocks, threads>>>(d_keys, d_values, numKeys, this->buckets,
 										this->size, this->hmax);
 	cudaDeviceSynchronize();
 
