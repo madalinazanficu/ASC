@@ -172,7 +172,7 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	cout << "Old size: " << this->size << endl;
 	cout << "Old factor: " << old_factor << endl;
 	if (old_factor > 0.9) {
-		new_factor = 0.6;
+		new_factor = 0.5;
 		new_size = (this->size + numKeys) / new_factor;
 		this->reshape(new_size);
 	}
