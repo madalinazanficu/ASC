@@ -102,53 +102,90 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 		return;
 	}
 
+	// (key, value) -> data to be inserted
 	int key = keys[index];
 	int val = value[index];
 	int pos = hash_function_int(&key) % hmax;
 	int curr_pos = 0, ref_pos = 0;
 	bool stop = false;
 
-	switch (buckets[pos].key) {
 	
-	// Case 1: Empty bucket => insert key:value
-	case 0:
-		buckets[pos].key = key;
+	int compare_and_swap = atomicCAS(&(buckets[pos].key), 0, key);
+
+	// Case 0 : Empty bucket => insert key:value (atomic operation)
+	// Case 1 : Key already exists => update value
+	if (compare_and_swap == 0 || compare_and_swap == key) {
 		buckets[pos].value = val;
-		break;
-
-	// Collision
-	default:
-
-		// Case 2:  Key already exists => update value
-		if (buckets[pos].key == key) {
-			buckets[pos].value = val;
-			break;
-		}
+		return;
 		
-		// Case 3: key already exists but in another bucket => update value
+	} else {
+		// Case 2: key already exists but in another bucket
 		ref_pos = pos;
 		curr_pos = (pos + 1) % hmax;
 		stop = false;
 		while (curr_pos != ref_pos) {
 			if (buckets[curr_pos].key == key) {
 				buckets[curr_pos].value = val;
-				stop = true;
 				break;
+				stop = true;
 			}
 			curr_pos = (curr_pos + 1) % size;
 		}
 		if (stop == true) {
-			break;
+			return;
 		}
 
-		// Case 4: find the next available slot
-		while (buckets[pos].key != 0) {
-			pos = (pos + 1) % size;
+		// Case 3: find the next available slot (atomic operation)
+		while (atomicCAS(&(buckets[pos].key), 0, key) != 0) {
+			pos = (pos + 1) % hmax;
 		}
-		buckets[pos].key = key;
 		buckets[pos].value = val;
-		break;
 	}
+
+
+
+
+	// switch (buckets[pos].key) {
+	
+	// // Case 1: Empty bucket => insert key:value
+	// case 0:
+	// 	buckets[pos].key = key;
+	// 	buckets[pos].value = val;
+	// 	break;
+
+	// // Collision
+	// default:
+
+	// 	// Case 2:  Key already exists => update value
+	// 	if (buckets[pos].key == key) {
+	// 		buckets[pos].value = val;
+	// 		break;
+	// 	}
+		
+	// 	// Case 3: key already exists but in another bucket => update value
+	// 	ref_pos = pos;
+	// 	curr_pos = (pos + 1) % hmax;
+	// 	stop = false;
+	// 	while (curr_pos != ref_pos) {
+	// 		if (buckets[curr_pos].key == key) {
+	// 			buckets[curr_pos].value = val;
+	// 			stop = true;
+	// 			break;
+	// 		}
+	// 		curr_pos = (curr_pos + 1) % size;
+	// 	}
+	// 	if (stop == true) {
+	// 		break;
+	// 	}
+
+	// 	// Case 4: find the next available slot
+	// 	while (buckets[pos].key != 0) {
+	// 		pos = (pos + 1) % size;
+	// 	}
+	// 	buckets[pos].key = key;
+	// 	buckets[pos].value = val;
+	// 	break;
+	// }
 }
 
 /**
