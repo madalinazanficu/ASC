@@ -43,14 +43,14 @@ GpuHashTable::GpuHashTable(int size) {
 
 	// Allocate memory (GPU/VRAM) for buckets
 
-	cout << "In constructor" << endl;
+	//cout << "In constructor" << endl;
 
 	glbGpuAllocator->_cudaMalloc((void **)&(this->buckets), size * sizeof(struct data));
 	if (this->buckets == NULL) {
 		printf("Could not allocate memory");
 	}
 
-	cout << "End of constructor" << endl;
+	//cout << "End of constructor" << endl;
 }
 
 /**
@@ -94,7 +94,7 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 	glbGpuAllocator->_cudaFree(old_buckets);
 
 
-	cout << "IN reshape END" << endl;
+	cout << "IN reshape END" << endl << endl;
 	return;
 }
 
@@ -154,7 +154,7 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
  */
 bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 
-	cout << "In insertBatch" << endl;
+	//cout << "In insertBatch" << endl;
 
 	//int available_space = this->hmax - this->size;
 	// if (available_space <= numKeys) {
@@ -200,7 +200,7 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 
 	this->size += numKeys;
 
-	cout << "End of insertBatch" << endl;
+	//cout << "End of insertBatch" << endl;
 	return true;
 }
 
@@ -243,7 +243,7 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
  */
 int* GpuHashTable::getBatch(int* keys, int numKeys) {
 
-	cout << "In getBatch" << endl;
+	//cout << "In getBatch" << endl;
 
 	int blocks = numKeys / 256;
 	int threads = 256;
@@ -267,7 +267,7 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 	// Free memory (GPU/VRAM) for result vector
 	glbGpuAllocator->_cudaFree(result_vec_gpu);
 
-	cout << "In getBatch - END" << endl;
+	//cout << "In getBatch - END" << endl;
 
 	// Final result from RAM
 	return result_vec_cpu;
@@ -294,7 +294,7 @@ __global__ void kernel_get_keys(int numKeys, struct data *buckets,
 
 int* GpuHashTable::getAllKeys(int numKeys) {
 
-	cout << "In getAllKeys" << endl;
+	//cout << "In getAllKeys" << endl;
 
 	int blocks = numKeys / 256;
 	int threads = 256;
@@ -315,7 +315,7 @@ int* GpuHashTable::getAllKeys(int numKeys) {
 	// Free memory (GPU/VRAM) for result vector
 	glbGpuAllocator->_cudaFree(result_vec_gpu);
 
-	cout << "In getAllKeys - END" << endl;
+	//cout << "In getAllKeys - END" << endl;
 
 	// Final result from RAM
 	return result_vec_cpu;
