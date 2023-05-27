@@ -160,19 +160,25 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	// 	int new_size = (this->hmax + numKeys) * 3;
 	// 	this->reshape(new_size);
 	// }
-
+	int new_size = 0;
+	double new_factor = 0.0;
 
 	// In case of not enough space, resize the hashtable
 	double old_factor = (this->size + numKeys) / this->hmax;
-
+	cout << "Old hmax: " << this->hmax << endl;
+	cout << "Num keys: " << numKeys << endl;
+	cout << "Old size: " << this->size << endl;
 	cout << "Old factor: " << old_factor << endl;
 	if (old_factor > 0.8) {
-		double new_factor = 0.5;
-		int new_size = (this->size + numKeys) / new_factor;
+		new_factor = 0.5;
+		new_size = (this->size + numKeys) / new_factor;
 		this->reshape(new_size);
 	}
 
+	cout << "New hmax: " << this->hmax << endl;
+	cout << "Num keys: " << numKeys << endl;
 	cout << "New size: " << this->hmax << endl;
+	cout << "New factor: " << new_factor << endl;
 
 	// Allocate memory on GPU for keys and values
 	int *d_keys = NULL;
