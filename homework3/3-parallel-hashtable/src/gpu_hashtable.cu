@@ -67,6 +67,8 @@ GpuHashTable::~GpuHashTable() {
  */
 void GpuHashTable::reshape(int numBucketsReshape) {
 
+	cout << "In reshape" << endl;
+
 	// Allocate new memory (GPU/VRAM) for more buckets
 	struct data *new_buckets = NULL;
 	glbGpuAllocator->_cudaMalloc((void **)&(new_buckets),
@@ -90,6 +92,8 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 	// Free old buckets
 	glbGpuAllocator->_cudaFree(old_buckets);
 
+
+	cout << "IN reshape END" << endl;
 	return;
 }
 
@@ -184,6 +188,8 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	cudaDeviceSynchronize();
 
 	this->size += numKeys;
+
+	cout << "End of insertBatch" << endl;
 	return true;
 }
 
@@ -225,6 +231,9 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
  * Gets a batch of key:value, using GPU
  */
 int* GpuHashTable::getBatch(int* keys, int numKeys) {
+
+	cout << "In getBatch" << endl;
+
 	int blocks = numKeys / 256;
 	int threads = 256;
 
@@ -247,6 +256,7 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 	// Free memory (GPU/VRAM) for result vector
 	glbGpuAllocator->_cudaFree(result_vec_gpu);
 
+	cout << "In getBatch - END" << endl;
 
 	// Final result from RAM
 	return result_vec_cpu;
@@ -273,6 +283,8 @@ __global__ void kernel_get_keys(int numKeys, struct data *buckets,
 
 int* GpuHashTable::getAllKeys(int numKeys) {
 
+	cout << "In getAllKeys" << endl;
+
 	int blocks = numKeys / 256;
 	int threads = 256;
 
@@ -291,6 +303,8 @@ int* GpuHashTable::getAllKeys(int numKeys) {
 
 	// Free memory (GPU/VRAM) for result vector
 	glbGpuAllocator->_cudaFree(result_vec_gpu);
+
+	cout << "In getAllKeys - END" << endl;
 
 	// Final result from RAM
 	return result_vec_cpu;
