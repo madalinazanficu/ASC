@@ -171,6 +171,8 @@ int main(int argc, char **argv)
 		float speed = chunkSize / elapsedTime;
 		float hashLoadFactor = (float) inserted * sizeof(int) * 2.f / glbGpuAllocator->_used();
 
+		cout << hashLoadFactor << endl;
+
 		// check load factor
 		DIE( loadFactorMin > hashLoadFactor, "loadFactorMin > hashLoadFactor");
 		DIE( loadFactorMax < hashLoadFactor, "loadFactorMax < hashLoadFactor");
