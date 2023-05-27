@@ -85,7 +85,7 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 	// 	keys[i] = i + 1;
 	// }
 	// int *values = (int *)calloc(this->size, sizeof(int));
-	// int num_keys = this->size;
+	int num_keys = this->size;
 
 	// Update the hashtable fields
 	this->hmax = numBucketsReshape;
