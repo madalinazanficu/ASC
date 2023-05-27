@@ -47,7 +47,7 @@ GpuHashTable::GpuHashTable(int size) {
 
 	glbGpuAllocator->_cudaMalloc((void **)&(this->buckets), size * sizeof(struct data));
 	if (this->buckets == NULL) {
-		printf("Could not allocate memory");
+		printf("Could not allocate memory\n");
 	}
 
 	//cout << "End of constructor" << endl;
@@ -69,6 +69,10 @@ __global__ void kernel_resize(struct data *old_buckets, struct data *new_buckets
 	}
 
 	int key = old_buckets[index].key;
+	if (key == 0) {
+		return;
+	}
+
 	int val = old_buckets[index].value;
 	int pos = hash_function_int(&key) % new_hmax;
 
@@ -100,15 +104,17 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 	int new_hmax = numBucketsReshape;
 
 	// Parallelize the copy of the old buckets to the new ones
-	int block_size = 256;
-	int num_blocks = (this->size + block_size - 1) / block_size;
-	kernel_resize<<<num_blocks, block_size>>>(this->buckets, new_buckets, this->size, this->hmax, new_hmax);
+	int blocks = this->hmax / 256;
+	int threads = 256;
+	kernel_resize<<<blocks, threads>>>(this->buckets, new_buckets, this->size, this->hmax, new_hmax);
 	cudaDeviceSynchronize();
 
 	// Update the fields of the hashtable
+	struct data *old_buckets = this->buckets;
 	this->buckets = new_buckets;
 	this->hmax = new_hmax;
-	glbGpuAllocator->_cudaFree(this->buckets);
+
+	glbGpuAllocator->_cudaFree(old_buckets);
 
 	cout << "End of reshape" << endl;
 }
@@ -178,8 +184,8 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	cout << "Num keys: " << numKeys << endl;
 	cout << "Old size: " << this->size << endl;
 	cout << "Old factor: " << old_factor << endl;
-	if (old_factor > 1) {
-		new_factor = 0.7;
+	if (old_factor > 0.8) {
+		new_factor = 0.6;
 		new_size = (this->size + numKeys) / new_factor;
 		this->reshape(new_size);
 	}

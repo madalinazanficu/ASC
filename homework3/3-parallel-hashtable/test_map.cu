@@ -151,7 +151,9 @@ int main(int argc, char **argv)
 
 	int inserted = 0;
 	int chunkSize = numKeys / numChunks;
+	// cout <<"Before reshape: "<< gHashTable.numBucketsTotal << endl;
 	gHashTable.reshape(chunkSize);
+	// cout <<"After reshape: "<< gHashTable.numBucketsTotal << endl;
 
 	// perform INSERT and test performance
 	for(int chunkStart = 0; chunkStart < numKeys; chunkStart += chunkSize) {
@@ -162,7 +164,9 @@ int main(int argc, char **argv)
 		auto start = high_resolution_clock::now();
 
 		// INSERT stage
+		// cout  <<"Before insert"<<endl;
 		gHashTable.insertBatch(keysStart, valuesStart, chunkSize);
+		// cout  <<"After insert"<<endl;
 		inserted += chunkSize;
 
 		auto stop = high_resolution_clock::now();
@@ -171,13 +175,11 @@ int main(int argc, char **argv)
 		float speed = chunkSize / elapsedTime;
 		float hashLoadFactor = (float) inserted * sizeof(int) * 2.f / glbGpuAllocator->_used();
 
-		cout << hashLoadFactor << endl;
-
 		// check load factor
 		DIE( loadFactorMin > hashLoadFactor, "loadFactorMin > hashLoadFactor");
 		DIE( loadFactorMax < hashLoadFactor, "loadFactorMax < hashLoadFactor");
 
-		cout << setw(20) << left << "HASH_BATCH_INSERT"
+		cout  << setw(20) << left << "HASH_BATCH_INSERT"
 		<< setw(24) << left << "count: " + to_string(chunkSize)
 		<< setw(24) << left << "speed: " + to_string( (int)speed ) + "M/sec"
 		<< setw(24) << left
@@ -192,8 +194,9 @@ int main(int argc, char **argv)
 	for(int chunkStart = 0; chunkStart < chunkSizeUpdate; chunkStart++) {
 		vecValues[chunkStart] += 1111111 + chunkStart;
 	}
-
+	// cout  <<"Before last insert"<<endl;
 	gHashTable.insertBatch(&vecKeys[0], &vecValues[0], chunkSizeUpdate);
+	// cout  <<"After last insert"<<endl;
 
 	// perform GET and test performance
 	for(int chunkStart = 0; chunkStart < numKeys; chunkStart += chunkSize) {
@@ -203,7 +206,9 @@ int main(int argc, char **argv)
 		auto start = high_resolution_clock::now();
 
 		// GET stage
+		// cout  <<"Before get"<<endl;
 		valuesGot = gHashTable.getBatch(keysStart, chunkSize);
+		// cout  <<"After get"<<endl;
 
 		auto stop = high_resolution_clock::now();
 		elapsedTime = duration_cast<microseconds>(stop - start).count();
@@ -211,7 +216,7 @@ int main(int argc, char **argv)
 		float speed = chunkSize / elapsedTime;
 		float hashLoadFactor = (float) inserted * sizeof(int) * 2.f / glbGpuAllocator->_used();
 
-		cout << setw(20) << left << "HASH_BATCH_GET"
+		cout  << setw(20) << left << "HASH_BATCH_GET"
 		<< setw(24) << left << "count: " + to_string(chunkSize)
 		<< setw(24) << left << "speed: " + to_string( (int)speed ) + "M/sec"
 		<< setw(24) << left
@@ -229,14 +234,14 @@ int main(int argc, char **argv)
 			if(vecValues[chunkStart + i] != valuesGot[i]) {
 				mistmatches++;
 				if(mistmatches < 32) {
-					cout << "Expected " << vecValues[chunkStart + i]
+					cout  << "Expected " << vecValues[chunkStart + i]
 					<< ", but got " << valuesGot[i] << " for key:" << keysStart[i] << endl;
 				}
 			}
 		}
 
 		if(mistmatches > 0) {
-			cout << "ERR, mistmatches: " << mistmatches << " / " << numKeys << endl;
+			cout  << "ERR, mistmatches: " << mistmatches << " / " << numKeys << endl;
 			exit(1);
 		}
 	}
@@ -244,15 +249,15 @@ int main(int argc, char **argv)
 	float avgSpeedInsert = speedInsert / numChunks;
 	float avgSpeedGet = speedGet / numChunks;
 
-	cout << "----------------------------------------------" << endl;
-	cout << setw(24) << left << "AVG_INSERT: " + to_string( (int)avgSpeedInsert ) + " M/sec,"
+	cout  << "----------------------------------------------" << endl;
+	cout  << setw(24) << left << "AVG_INSERT: " + to_string( (int)avgSpeedInsert ) + " M/sec,"
 		<< setw(24) << left<< "AVG_GET: " + to_string( (int)avgSpeedGet ) + " M/sec,"
 		<< setw(24) << left<< "MIN_SPEED_REQ: " +  to_string(minSpeed) + " M/sec" << endl;
 
 	DIE( minSpeed > avgSpeedGet, "minSpeed > avgSpeedGet" );
 	DIE( minSpeed > avgSpeedInsert, "minSpeed > avgSpeedInsert" );
 
-	cout << endl;
+	cout  << endl;
 
 	return 0;
 }
