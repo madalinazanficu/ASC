@@ -155,13 +155,6 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
  */
 bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 
-	//cout << "In insertBatch" << endl;
-
-	//int available_space = this->hmax - this->size;
-	// if (available_space <= numKeys) {
-	// 	int new_size = (this->hmax + numKeys) * 3;
-	// 	this->reshape(new_size);
-	// }
 	int new_size = 0;
 	double new_factor = 0.0;
 
@@ -171,7 +164,7 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	cout << "Num keys: " << numKeys << endl;
 	cout << "Old size: " << this->size << endl;
 	cout << "Old factor: " << old_factor << endl;
-	if (old_factor > 0.9) {
+	if (old_factor > 0.8) {
 		new_factor = 0.5;
 		new_size = (this->size + numKeys) / new_factor;
 		this->reshape(new_size);
