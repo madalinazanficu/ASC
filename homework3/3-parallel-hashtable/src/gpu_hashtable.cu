@@ -61,6 +61,33 @@ GpuHashTable::~GpuHashTable() {
 }
 
 
+_global__ void kernel_resize(struct data *old_buckets, struct data *new_buckets, int size, int old_hmax, int new_hmax) {
+
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	if (index >= size) {
+		return;
+	}
+
+	int key = old_buckets[index].key;
+	int val = old_buckets[index].value;
+	int pos = hash_function_int(&key) % new_hmax;
+
+
+	int compare_and_swap = atomicCAS(&(new_buckets[pos].key), 0, key);
+
+	// Case 0 : Empty bucket => insert key:value (atomic operation)
+	if (compare_and_swap == 0) {
+		new_buckets[pos].value = val;
+	} else {
+		// Case1 : Collision => find the next empty bucket
+		while (atomicCAS(&(new_buckets[pos].key), 0, key) != 0) {
+			pos = (pos + 1) % hmax;
+		}
+		new_buckets[pos].value = val;
+	}
+}
+
+
 /**
  * Function reshape
  * Performs resize of the hashtable based on load factor
@@ -68,40 +95,22 @@ GpuHashTable::~GpuHashTable() {
 void GpuHashTable::reshape(int numBucketsReshape) {
 
 	cout << "In reshape" << endl;
-
-	// Allocate new memory (GPU/VRAM) for more buckets
 	struct data *new_buckets = NULL;
-	glbGpuAllocator->_cudaMalloc((void **)&(new_buckets),
-									numBucketsReshape * sizeof(struct data));
-	
-	// Save the reference of the old buckets
-	struct data *old_buckets = this->buckets;
+	glbGpuAllocator->_cudaMalloc((void **)&(new_buckets), numBucketsReshape * sizeof(struct data));
+	int new_hmax = numBucketsReshape;
 
-	// Get all the keys and values from the old buckets
-	int *keys = getAllKeys(this->size);
-	int *values = getBatch(keys, this->size);
-	// int *keys = (int *)calloc(this->size, sizeof(int));
-	// for (int i = 0; i < this->size; i++) {
-	// 	keys[i] = i + 1;
-	// }
-	// int *values = (int *)calloc(this->size, sizeof(int));
-	int num_keys = this->size;
+	// Parallelize the copy of the old buckets to the new ones
+	int block_size = 256;
+	int num_blocks = (this->size + block_size - 1) / block_size;
+	kernel_resize<<<num_blocks, block_size>>>(this->buckets, new_buckets, this->size, this->hmax, new_hmax);
+	cudaDeviceSynchronize();
 
-	// Update the hashtable fields
-	this->hmax = numBucketsReshape;
+	// Update the fields of the hashtable
 	this->buckets = new_buckets;
-	this->size = 0;
+	this->hmax = new_hmax;
+	glbGpuAllocator->_cudaFree(this->buckets);
 
-	// Insert all the elements from the old buckets to the new one
-	insertBatch(keys, values, num_keys);
-
-	// Free old buckets
-	glbGpuAllocator->_cudaFree(old_buckets);
-	free(keys);
-	free(values);
-
-	cout << "IN reshape END" << endl << endl;
-	return;
+	cout << "End of reshape" << endl;
 }
 
 
