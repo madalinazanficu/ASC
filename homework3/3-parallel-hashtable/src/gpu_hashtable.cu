@@ -78,14 +78,14 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 	struct data *old_buckets = this->buckets;
 
 	// Get all the keys and values from the old buckets
-	//int *keys = getAllKeys(this->size);
-	//int *values = getBatch(keys, this->size);
-	int *keys = (int *)calloc(this->size, sizeof(int));
-	for (int i = 0; i < this->size; i++) {
-		keys[i] = i + 1;
-	}
-	int *values = (int *)calloc(this->size, sizeof(int));
-	int num_keys = this->size;
+	int *keys = getAllKeys(this->size);
+	int *values = getBatch(keys, this->size);
+	// int *keys = (int *)calloc(this->size, sizeof(int));
+	// for (int i = 0; i < this->size; i++) {
+	// 	keys[i] = i + 1;
+	// }
+	// int *values = (int *)calloc(this->size, sizeof(int));
+	// int num_keys = this->size;
 
 	// Update the hashtable fields
 	this->hmax = numBucketsReshape;
