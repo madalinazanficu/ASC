@@ -92,7 +92,8 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 
 	// Free old buckets
 	glbGpuAllocator->_cudaFree(old_buckets);
-
+	free(keys);
+	free(values);
 
 	cout << "IN reshape END" << endl << endl;
 	return;
@@ -200,6 +201,10 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	cout << "New size: " << this->size << endl;
 	cout << "New factor: " << new_factor << endl;
 
+	// Free memory on GPU
+	glbGpuAllocator->_cudaFree(d_keys);
+	glbGpuAllocator->_cudaFree(d_values);
+
 	//cout << "End of insertBatch" << endl;
 	return true;
 }
@@ -270,6 +275,7 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 	
 	// Free memory (GPU/VRAM) for result vector
 	glbGpuAllocator->_cudaFree(result_vec_gpu);
+	glbGpuAllocator->_cudaFree(d_keys);
 
 	//cout << "In getBatch - END" << endl;
 
