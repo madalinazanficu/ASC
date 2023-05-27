@@ -79,7 +79,8 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 
 	// Get all the keys and values from the old buckets
 	int *keys = getAllKeys(this->size);
-	int *values = getBatch(keys, this->size);
+	//int *values = getBatch(keys, this->size);
+	int *value = (int *)calloc(this->size, sizeof(int));
 	int num_keys = this->size;
 
 	// Update the hashtable fields
