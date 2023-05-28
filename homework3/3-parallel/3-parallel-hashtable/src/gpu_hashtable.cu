@@ -45,6 +45,7 @@ GpuHashTable::GpuHashTable(int size) {
 	// Allocate memory (GPU/VRAM) for buckets
 	glbGpuAllocator->_cudaMalloc((void **)&(this->buckets), size * sizeof(struct data));
 	if (this->buckets == NULL) {
+		printf("Could not allocate memory\n");
 		DIE(1, "Could not allocate memory");
 	}
 }
@@ -58,8 +59,7 @@ GpuHashTable::~GpuHashTable() {
 
 
 
-__global__ void kernel_resize(struct data *old_buckets, struct data *new_buckets,
-								int size, int old_hmax, int new_hmax) {
+__global__ void kernel_resize(struct data *old_buckets, struct data *new_buckets, int size, int old_hmax, int new_hmax) {
 
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	if (index >= old_hmax) {
@@ -74,13 +74,14 @@ __global__ void kernel_resize(struct data *old_buckets, struct data *new_buckets
 	int val = old_buckets[index].value;
 	int pos = hash_function_int(&key) % new_hmax;
 
+
 	int compare_and_swap = atomicCAS(&(new_buckets[pos].key), 0, key);
 
 	// Case 0 : Empty bucket => insert key:value (atomic operation)
 	if (compare_and_swap == 0) {
 		new_buckets[pos].value = val;
 	} else {
-		// Case 1 : Collision => find the next empty bucket
+		// Case1 : Collision => find the next empty bucket
 		while (atomicCAS(&(new_buckets[pos].key), 0, key) != 0) {
 			pos = (pos + 1) % new_hmax;
 		}
@@ -94,9 +95,9 @@ __global__ void kernel_resize(struct data *old_buckets, struct data *new_buckets
  * Performs resize of the hashtable based on load factor
  */
 void GpuHashTable::reshape(int numBucketsReshape) {
+	cout << "In reshape" << endl;
 	struct data *new_buckets = NULL;
-	glbGpuAllocator->_cudaMalloc((void **)&(new_buckets),
-									numBucketsReshape * sizeof(struct data));
+	glbGpuAllocator->_cudaMalloc((void **)&(new_buckets), numBucketsReshape * sizeof(struct data));
 	int new_hmax = numBucketsReshape;
 
 	// Parallelize the copy of the old buckets to the new ones
@@ -105,8 +106,7 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 	if (this->hmax % 256 != 0) {
 		blocks++;
 	}
-	kernel_resize<<<blocks, threads>>>(this->buckets, new_buckets,
-									this->size, this->hmax, new_hmax);
+	kernel_resize<<<blocks, threads>>>(this->buckets, new_buckets, this->size, this->hmax, new_hmax);
 	cudaDeviceSynchronize();
 
 	// Update the fields of the hashtable
@@ -116,6 +116,7 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 
 	glbGpuAllocator->_cudaFree(old_buckets);
 
+	cout << "End of reshape" << endl;
 	return;
 }
 
@@ -133,8 +134,9 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 	int val = value[index];
 	int pos = hash_function_int(&key) % hmax;
 	int curr_pos = 0, ref_pos = 0;
+	bool stop = false;
+
 	
-	// Atomic operation to see if the bucket is empty
 	int compare_and_swap = atomicCAS(&(buckets[pos].key), 0, key);
 
 	// Case 0 : Empty bucket => insert key:value (atomic operation)
@@ -142,21 +144,20 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 	if (compare_and_swap == 0 || compare_and_swap == key) {
 		atomicExch(&buckets[pos].value, val);
 		return;
-	}
 
-	// Case2: Collision
-	ref_pos = pos;
-	curr_pos = (pos + 1) % hmax;
-	while (curr_pos != ref_pos) {
-		compare_and_swap = atomicCAS(&(buckets[curr_pos].key), 0, key);
-
-		// Case 2.1: key already exists but in another bucket -> update value
-		// Case 2.2: key doesn't exist -> old key is 0
-		if (compare_and_swap == key || compare_and_swap == 0) {
-			atomicExch(&buckets[curr_pos].value, val);
-			return;
+	} else {
+		ref_pos = pos;
+		curr_pos = (pos + 1) % hmax;
+		while (curr_pos != ref_pos) {
+			compare_and_swap = atomicCAS(&(buckets[curr_pos].key), 0, key);
+			// Case 2: key already exists but in another bucket -> update value
+			// Case 3: key doesn't exist -> old key is 0
+			if (compare_and_swap == key || compare_and_swap == 0) {
+				atomicExch(&buckets[curr_pos].value, val);
+				return;
+			}
+			curr_pos = (curr_pos + 1) % hmax;
 		}
-		curr_pos = (curr_pos + 1) % hmax;
 	}
 }
 
@@ -166,11 +167,13 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
  */
 bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	int new_size = 0;
+	float new_factor = 0.0f;
 
 	// In case of not enough space, resize the hashtable
 	float old_factor = (float)(this->size + numKeys) / (float)this->hmax;
-	if (old_factor > this->max_threshold) {
-		new_size = (this->size + numKeys) /this->regular_threshold;
+	if (old_factor > 0.8f) {
+		new_factor = 0.6f;
+		new_size = (this->size + numKeys) / new_factor;
 		this->reshape(new_size);
 	}
 
