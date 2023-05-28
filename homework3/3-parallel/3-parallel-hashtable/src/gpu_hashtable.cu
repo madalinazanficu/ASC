@@ -42,10 +42,15 @@ GpuHashTable::GpuHashTable(int size) {
 	this->buckets = NULL;
 
 	// Allocate memory (GPU/VRAM) for buckets
+
+	//cout << "In constructor" << endl;
+
 	glbGpuAllocator->_cudaMalloc((void **)&(this->buckets), size * sizeof(struct data));
 	if (this->buckets == NULL) {
 		printf("Could not allocate memory\n");
 	}
+
+	//cout << "End of constructor" << endl;
 }
 
 /**
@@ -93,6 +98,7 @@ __global__ void kernel_resize(struct data *old_buckets, struct data *new_buckets
  * Performs resize of the hashtable based on load factor
  */
 void GpuHashTable::reshape(int numBucketsReshape) {
+	cout << "In reshape" << endl;
 	struct data *new_buckets = NULL;
 	glbGpuAllocator->_cudaMalloc((void **)&(new_buckets), numBucketsReshape * sizeof(struct data));
 	int new_hmax = numBucketsReshape;
@@ -112,6 +118,8 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 	this->hmax = new_hmax;
 
 	glbGpuAllocator->_cudaFree(old_buckets);
+
+	cout << "End of reshape" << endl;
 	return;
 }
 
@@ -177,6 +185,10 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 
 	// In case of not enough space, resize the hashtable
 	float old_factor = (float)(this->size + numKeys) / (float)this->hmax;
+	cout << "Old hmax: " << this->hmax << endl;
+	cout << "Num keys: " << numKeys << endl;
+	cout << "Old size: " << this->size << endl;
+	cout << "Old factor: " << old_factor << endl;
 	if (old_factor > 0.8f) {
 		new_factor = 0.6f;
 		new_size = (this->size + numKeys) / new_factor;
@@ -205,10 +217,17 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 
 	this->size += numKeys;
 
+	float newf = (float)(this->size) / (float)this->hmax;
+	cout << "New hmax: " << this->hmax << endl;
+	cout << "Num keys: " << numKeys << endl;
+	cout << "New size: " << this->size << endl;
+	cout << "New factor: " << newf << endl;
+
 	// Free memory on GPU
 	glbGpuAllocator->_cudaFree(d_keys);
 	glbGpuAllocator->_cudaFree(d_values);
 
+	//cout << "End of insertBatch" << endl;
 	return true;
 }
 
@@ -258,6 +277,8 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
  * Gets a batch of key:value, using GPU
  */
 int* GpuHashTable::getBatch(int* keys, int numKeys) {
+	//cout << "In getBatch" << endl;
+
 	int blocks = numKeys / 256;
 	int threads = 256;
 	if (numKeys % 256 != 0) {
@@ -287,6 +308,8 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 	// Free memory (GPU/VRAM) for result vector
 	glbGpuAllocator->_cudaFree(result_vec_gpu);
 	glbGpuAllocator->_cudaFree(d_keys);
+
+	//cout << "In getBatch - END" << endl;
 
 	// Final result from RAM
 	return result_vec_cpu;
