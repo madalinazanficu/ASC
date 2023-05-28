@@ -211,7 +211,7 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 
 	this->size += numKeys;
 
-	float newf = (float)(this->size + numKeys) / (float)this->hmax;
+	float newf = (float)(this->size) / (float)this->hmax;
 	cout << "New hmax: " << this->hmax << endl;
 	cout << "Num keys: " << numKeys << endl;
 	cout << "New size: " << this->size << endl;

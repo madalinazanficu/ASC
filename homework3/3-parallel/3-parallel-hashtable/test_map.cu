@@ -216,8 +216,8 @@ int main(int argc, char **argv)
 		<< "loadfactor: " + to_string( (int)(hashLoadFactor * 100.f) ) + "%" << endl;
 
 		// check load factor
-		// DIE( loadFactorMin > hashLoadFactor, "loadFactorMin > hashLoadFactor" );
-		// DIE( loadFactorMax < hashLoadFactor, "loadFactorMax < hashLoadFactor" );
+		DIE( loadFactorMin > hashLoadFactor, "loadFactorMin > hashLoadFactor" );
+		DIE( loadFactorMax < hashLoadFactor, "loadFactorMax < hashLoadFactor" );
 		DIE( valuesGot == NULL, "ERR, ptr valuesCheck cannot be NULL" );
 
 		speedGet += speed;
