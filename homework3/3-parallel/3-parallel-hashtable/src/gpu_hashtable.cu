@@ -141,7 +141,6 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 	// Case 0 : Empty bucket => insert key:value (atomic operation)
 	// Case 1 : Key already exists => update value
 	if (compare_and_swap == 0 || compare_and_swap == key) {
-		//atomicExch(&buckets[pos].value, val);
 		buckets[pos].value = val;
 		return;
 
@@ -156,7 +155,6 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 		// Case 2.1: key already exists but in another bucket -> update value
 		// Case 2.2: key doesn't exist -> old key is 0
 		if (compare_and_swap == key || compare_and_swap == 0) {
-			//atomicExch(&buckets[curr_pos].value, val);
 			buckets[curr_pos].value = val;
 			return;
 		}
@@ -221,6 +219,7 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
 	int pos = hash_function_int(&key) % hmax;
 	int result = -1;
 
+	// The key is in the assigned bucket
 	if (buckets[pos].key == key) {
 		result = buckets[pos].value;
 		result_vec[index] = result;
@@ -229,6 +228,8 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
 
 	int ref_pos = pos;
 	int curr_pos = (pos + 1) % hmax;
+
+	// Search the key in the next buckets
 	while (curr_pos != ref_pos) {
 		if (buckets[curr_pos].key == key) {
 			result = buckets[curr_pos].value;
@@ -242,6 +243,8 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
 		}
 		curr_pos = (curr_pos + 1) % hmax;
 	}
+
+	// Update the result vector
 	result_vec[index] = result;
 		
 	return;
