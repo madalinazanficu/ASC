@@ -43,8 +43,7 @@ GpuHashTable::GpuHashTable(int size) {
 	this->buckets = NULL;
 
 	// Allocate memory (GPU/VRAM) for buckets
-	glbGpuAllocator->_cudaMalloc((void **)&(this->buckets),
-									size * sizeof(struct data));
+	glbGpuAllocator->_cudaMalloc((void **)&(this->buckets), size * sizeof(struct data));
 	if (this->buckets == NULL) {
 		DIE(1, "Could not allocate memory");
 	}
@@ -141,10 +140,8 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 	// Case 0 : Empty bucket => insert key:value (atomic operation)
 	// Case 1 : Key already exists => update value
 	if (compare_and_swap == 0 || compare_and_swap == key) {
-		//atomicExch(&buckets[pos].value, val);
-		buckets[pos].value = val;
+		atomicExch(&buckets[pos].value, val);
 		return;
-
 	}
 
 	// Case2: Collision
@@ -156,8 +153,7 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 		// Case 2.1: key already exists but in another bucket -> update value
 		// Case 2.2: key doesn't exist -> old key is 0
 		if (compare_and_swap == key || compare_and_swap == 0) {
-			//atomicExch(&buckets[curr_pos].value, val);
-			buckets[curr_pos].value = val;
+			atomicExch(&buckets[curr_pos].value, val);
 			return;
 		}
 		curr_pos = (curr_pos + 1) % hmax;
