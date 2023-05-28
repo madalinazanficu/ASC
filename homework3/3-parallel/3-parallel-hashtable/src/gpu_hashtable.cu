@@ -106,6 +106,9 @@ void GpuHashTable::reshape(int numBucketsReshape) {
 	// Parallelize the copy of the old buckets to the new ones
 	int blocks = this->hmax / 256;
 	int threads = 256;
+	if (this->hmax % 256 != 0) {
+		blocks++;
+	}
 	kernel_resize<<<blocks, threads>>>(this->buckets, new_buckets, this->size, this->hmax, new_hmax);
 	cudaDeviceSynchronize();
 
@@ -205,6 +208,9 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	// Insert the batch of keys and values
 	int blocks = numKeys / 256;
 	int threads = 256;
+	if (numKeys % 256 != 0) {
+		blocks++;
+	}
 	kernel_insert<<<blocks, threads>>>(d_keys, d_values, numKeys, this->buckets,
 										this->size, this->hmax);
 	cudaDeviceSynchronize();
@@ -275,6 +281,9 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 
 	int blocks = numKeys / 256;
 	int threads = 256;
+	if (numKeys % 256 != 0) {
+		blocks++;
+	}
 
 	// Allocate memory (GPU/VRAM) for result vector
 	int *result_vec_gpu = NULL;
