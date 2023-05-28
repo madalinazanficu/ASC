@@ -235,7 +235,7 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
 
 	int key = keys[index];
 	int pos = hash_function_int(&key) % hmax;
-	int result = 0;
+	int result = -1;
 
 	if (buckets[pos].key == key) {
 		result = buckets[pos].value;
