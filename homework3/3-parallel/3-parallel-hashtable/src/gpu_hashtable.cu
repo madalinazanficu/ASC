@@ -15,6 +15,7 @@ __host__ __device__ unsigned int hash_function_int(void *a)
 {
 	/*
 	 * Credits: https://stackoverflow.com/a/12996028/7883884
+	 * SD Laboratory
 	 */
 	unsigned int uint_a = *((unsigned int *)a);
 
@@ -42,16 +43,11 @@ GpuHashTable::GpuHashTable(int size) {
 	this->buckets = NULL;
 
 	// Allocate memory (GPU/VRAM) for buckets
-
-	//cout << "In constructor" << endl;
-
 	glbGpuAllocator->_cudaMalloc((void **)&(this->buckets), size * sizeof(struct data));
 	if (this->buckets == NULL) {
 		printf("Could not allocate memory\n");
 		DIE(1, "Could not allocate memory");
 	}
-
-	//cout << "End of constructor" << endl;
 }
 
 /**
@@ -154,25 +150,14 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 		curr_pos = (pos + 1) % hmax;
 		while (curr_pos != ref_pos) {
 			compare_and_swap = atomicCAS(&(buckets[curr_pos].key), 0, key);
-			// Case 2: key already exists but in another bucket
-			if (compare_and_swap == key) {
-				atomicExch(&buckets[curr_pos].value, val);
-				return;
-			}
-
-			// Case 3: key doesn't exist
-			if (compare_and_swap == 0) {
+			// Case 2: key already exists but in another bucket -> update value
+			// Case 3: key doesn't exist -> old key is 0
+			if (compare_and_swap == key || compare_and_swap == 0) {
 				atomicExch(&buckets[curr_pos].value, val);
 				return;
 			}
 			curr_pos = (curr_pos + 1) % hmax;
 		}
-
-		// // Case 3: find the next available slot (atomic operation)
-		// while (atomicCAS(&(buckets[pos].key), 0, key) != 0) {
-		// 	pos = (pos + 1) % hmax;
-		// }
-		// atomicExch(&buckets[pos].value, val);
 	}
 }
 
@@ -186,10 +171,6 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 
 	// In case of not enough space, resize the hashtable
 	float old_factor = (float)(this->size + numKeys) / (float)this->hmax;
-	cout << "Old hmax: " << this->hmax << endl;
-	cout << "Num keys: " << numKeys << endl;
-	cout << "Old size: " << this->size << endl;
-	cout << "Old factor: " << old_factor << endl;
 	if (old_factor > 0.8f) {
 		new_factor = 0.6f;
 		new_size = (this->size + numKeys) / new_factor;
@@ -218,17 +199,10 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 
 	this->size += numKeys;
 
-	float newf = (float)(this->size) / (float)this->hmax;
-	cout << "New hmax: " << this->hmax << endl;
-	cout << "Num keys: " << numKeys << endl;
-	cout << "New size: " << this->size << endl;
-	cout << "New factor: " << newf << endl;
-
 	// Free memory on GPU
 	glbGpuAllocator->_cudaFree(d_keys);
 	glbGpuAllocator->_cudaFree(d_values);
 
-	//cout << "End of insertBatch" << endl;
 	return true;
 }
 
@@ -278,7 +252,6 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
  * Gets a batch of key:value, using GPU
  */
 int* GpuHashTable::getBatch(int* keys, int numKeys) {
-	//cout << "In getBatch" << endl;
 
 	int blocks = numKeys / 256;
 	int threads = 256;
@@ -309,8 +282,6 @@ int* GpuHashTable::getBatch(int* keys, int numKeys) {
 	// Free memory (GPU/VRAM) for result vector
 	glbGpuAllocator->_cudaFree(result_vec_gpu);
 	glbGpuAllocator->_cudaFree(d_keys);
-
-	//cout << "In getBatch - END" << endl;
 
 	// Final result from RAM
 	return result_vec_cpu;
