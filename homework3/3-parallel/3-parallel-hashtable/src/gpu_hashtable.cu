@@ -48,6 +48,7 @@ GpuHashTable::GpuHashTable(int size) {
 	glbGpuAllocator->_cudaMalloc((void **)&(this->buckets), size * sizeof(struct data));
 	if (this->buckets == NULL) {
 		printf("Could not allocate memory\n");
+		DIE(1, "Could not allocate memory");
 	}
 
 	//cout << "End of constructor" << endl;
