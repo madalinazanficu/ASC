@@ -13,10 +13,10 @@ struct data {
 class GpuHashTable
 {
 	struct data *buckets;
-	unsigned int size;			    	// the current number of entries in hashtable
-	unsigned int hmax;             		// maximum entries in hashtable
-	const float max_threshold = 0.8f;
-	const float regular_threshold = 0.6f;
+	unsigned int size;			    			// the current number of entries in hashtable
+	unsigned int hmax;             				// maximum entries in hashtable
+	const float max_threshold = 0.8f;  			// used to check if we need to resize
+	const float regular_threshold = 0.6f;		// used to get a specific load factor for the hashtable
 
 	public:
 		GpuHashTable(int size);
