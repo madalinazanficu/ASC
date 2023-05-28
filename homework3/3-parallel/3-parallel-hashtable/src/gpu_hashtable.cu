@@ -178,16 +178,16 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
  */
 bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	int new_size = 0;
-	float new_factor = 0.0;
+	float new_factor = 0.0f;
 
 	// In case of not enough space, resize the hashtable
-	float old_factor = (this->size + numKeys) / this->hmax;
+	float old_factor = (float)(this->size + numKeys) / (float)this->hmax;
 	cout << "Old hmax: " << this->hmax << endl;
 	cout << "Num keys: " << numKeys << endl;
 	cout << "Old size: " << this->size << endl;
 	cout << "Old factor: " << old_factor << endl;
-	if (old_factor > 0.8) {
-		new_factor = 0.6;
+	if (old_factor > 0.8f) {
+		new_factor = 0.6f;
 		new_size = (this->size + numKeys) / new_factor;
 		this->reshape(new_size);
 	}
@@ -211,7 +211,7 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 
 	this->size += numKeys;
 
-	float newf = (this->size + numKeys) / this->hmax;
+	float newf = (float)(this->size + numKeys) / (float)this->hmax;
 	cout << "New hmax: " << this->hmax << endl;
 	cout << "Num keys: " << numKeys << endl;
 	cout << "New size: " << this->size << endl;
@@ -250,7 +250,8 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
 	while (curr_pos != ref_pos) {
 		if (buckets[curr_pos].key == key) {
 			result = buckets[curr_pos].value;
-			break;
+			result_vec[index] = result;
+			return;
 		}
 		curr_pos = (curr_pos + 1) % hmax;
 	}
