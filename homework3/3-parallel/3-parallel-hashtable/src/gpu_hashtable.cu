@@ -250,7 +250,7 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
 			result = buckets[curr_pos].value;
 			break;
 		}
-		curr_pos = (curr_pos + 1) % size;
+		curr_pos = (curr_pos + 1) % hmax;
 	}
 	result_vec[index] = result;
 		
