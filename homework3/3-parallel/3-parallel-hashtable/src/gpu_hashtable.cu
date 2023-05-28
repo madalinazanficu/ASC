@@ -142,31 +142,27 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
 	// Case 0 : Empty bucket => insert key:value (atomic operation)
 	// Case 1 : Key already exists => update value
 	if (compare_and_swap == 0 || compare_and_swap == key) {
-		buckets[pos].value = val;
+		atomicExch(&buckets[pos].value, val);
 		return;
 
 	} else {
 		// Case 2: key already exists but in another bucket
 		ref_pos = pos;
 		curr_pos = (pos + 1) % hmax;
-		stop = false;
 		while (curr_pos != ref_pos) {
-			if (buckets[curr_pos].key == key) {
-				buckets[curr_pos].value = val;
-				stop = true;
-				break;
+			compare_and_swap = atomicCAS(&(buckets[curr_pos].key), key, key);
+			if (compare_and_swap == key) {
+				atomicExch(&buckets[curr_pos].value, val);
+				return;
 			}
-			curr_pos = (curr_pos + 1) % size;
-		}
-		if (stop == true) {
-			return;
+			curr_pos = (curr_pos + 1) % hmax;
 		}
 
 		// Case 3: find the next available slot (atomic operation)
 		while (atomicCAS(&(buckets[pos].key), 0, key) != 0) {
 			pos = (pos + 1) % hmax;
 		}
-		buckets[pos].value = val;
+		atomicExch(&buckets[pos].value, val);
 	}
 }
 
