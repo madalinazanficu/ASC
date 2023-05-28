@@ -72,7 +72,6 @@ de baza ale programarii pe GPU.
 Moreover, am testat pe moodle acceasi arhiva de mai multe ori 
 (care trece mereu pe nvidia-gpu) 
 si am primit rezultate diferite, deci nu stiu ce sa mai zic.
-Pentru a nu exista probleme o sa las un link catre un drive cu cateva poze "dovada" 
-si rog in caz ca tema mea nu o sa mearga cand o sa dea iar auto-submit pe moodle 
-sa fiu contactata pentru a rezolva problema.In aceste conditii cu hpsl si nvidia-coda 
+In caz ca exista probleme cu tema mea, rog sa ma contactati pentru a le rezolva.
+Deoarece am totul monitorizat pe github. In aceste conditii cu hpsl si nvidia-coda 
 care merg din cand in cand, chiar am dat tot ce am putut.

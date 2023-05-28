@@ -77,13 +77,16 @@ __global__ void kernel_resize(struct data *old_buckets, struct data *new_buckets
 
 	// Case 0 : Empty bucket => insert key:value (atomic operation)
 	if (compare_and_swap == 0) {
-		new_buckets[pos].value = val;
+		// new_buckets[pos].value = val;
+		atomicExch(&new_buckets[pos].value, val);
+
 	} else {
 		// Case1 : Collision => find the next empty bucket
 		while (atomicCAS(&(new_buckets[pos].key), 0, key) != 0) {
 			pos = (pos + 1) % new_hmax;
 		}
-		new_buckets[pos].value = val;
+		atomicExch(&new_buckets[pos].value, val);
+		//new_buckets[pos].value = val;
 	}
 }
 
