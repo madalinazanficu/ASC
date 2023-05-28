@@ -253,6 +253,11 @@ __global__ void kernel_get_batch(int *keys, int num, struct data *buckets,
 			result_vec[index] = result;
 			return;
 		}
+		// Can't find the key
+		if (buckets[curr_pos].key == 0) {
+			result_vec[index] = result;
+			return;
+		}
 		curr_pos = (curr_pos + 1) % hmax;
 	}
 	result_vec[index] = result;
