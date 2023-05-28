@@ -77,7 +77,6 @@ __global__ void kernel_resize(struct data *old_buckets, struct data *new_buckets
 
 	// Case 0 : Empty bucket => insert key:value (atomic operation)
 	if (compare_and_swap == 0) {
-		// new_buckets[pos].value = val;
 		atomicExch(&new_buckets[pos].value, val);
 
 	} else {
@@ -86,7 +85,6 @@ __global__ void kernel_resize(struct data *old_buckets, struct data *new_buckets
 			pos = (pos + 1) % new_hmax;
 		}
 		atomicExch(&new_buckets[pos].value, val);
-		//new_buckets[pos].value = val;
 	}
 }
 
