@@ -191,7 +191,7 @@ int main(int argc, char **argv)
 		vecValues[chunkStart] += 1111111 + chunkStart;
 	}
 
-	gHashTable.insertBatch(&vecKeys[0], &vecValues[0], chunkSizeUpdate);
+	//gHashTable.insertBatch(&vecKeys[0], &vecValues[0], chunkSizeUpdate);
 
 	// perform GET and test performance
 	for(int chunkStart = 0; chunkStart < numKeys; chunkStart += chunkSize) {

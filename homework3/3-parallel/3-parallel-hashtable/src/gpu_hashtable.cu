@@ -176,10 +176,10 @@ __global__ void kernel_insert(int *keys, int *value, int numKeys,
  */
 bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 	int new_size = 0;
-	double new_factor = 0.0;
+	float new_factor = 0.0;
 
 	// In case of not enough space, resize the hashtable
-	double old_factor = (this->size + numKeys) / this->hmax;
+	float old_factor = (this->size + numKeys) / this->hmax;
 	cout << "Old hmax: " << this->hmax << endl;
 	cout << "Num keys: " << numKeys << endl;
 	cout << "Old size: " << this->size << endl;
@@ -209,7 +209,7 @@ bool GpuHashTable::insertBatch(int *keys, int* values, int numKeys) {
 
 	this->size += numKeys;
 
-	double newf = (this->size + numKeys) / this->hmax;
+	float newf = (this->size + numKeys) / this->hmax;
 	cout << "New hmax: " << this->hmax << endl;
 	cout << "Num keys: " << numKeys << endl;
 	cout << "New size: " << this->size << endl;
