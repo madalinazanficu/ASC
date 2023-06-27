@@ -1,0 +1,28 @@
+# 
+PARTITION=nehalem
+BUILD_TIME=00:10:00
+RUN_TIME=00:10:00
+CONTAINER_IMAGE=docker://gitlab.cs.pub.ro:5050/asc/asc-public/c-labs:1.3.1
+BUILD_SCRIPT_NAME=../utils/batch_build.sh
+WAIT_SCRIPT_NAME=../utils/batch_wait.sh
+
+%: %.c
+	sbatch --time $(BUILD_TIME) -p $(PARTITION) --export=TASK=$@,CONTAINER_IMAGE=$(CONTAINER_IMAGE) $(BUILD_SCRIPT_NAME) | $(WAIT_SCRIPT_NAME)
+
+optimize_%: %.c
+	sbatch --time $(BUILD_TIME) -p $(PARTITION) --export=TASK=$@,CONTAINER_IMAGE=$(CONTAINER_IMAGE) $(BUILD_SCRIPT_NAME) | $(WAIT_SCRIPT_NAME)
+
+layer_chace_%:
+	sbatch --time $(RUN_TIME) -p $(PARTITION) --export=TASK=$@.sh,CONTAINER_IMAGE=$(CONTAINER_IMAGE) $(BUILD_SCRIPT_NAME) | $(WAIT_SCRIPT_NAME)
+
+plot_layer_%: 
+	sbatch --time $(RUN_TIME) -p $(PARTITION) --export=TASK=$@.sh,CONTAINER_IMAGE=$(CONTAINER_IMAGE) $(BUILD_SCRIPT_NAME) | $(WAIT_SCRIPT_NAME)
+
+
+clean:
+	rm -rf task3
+	rm -f layer_cache_1.out
+	rm -f layer_cache_2.out
+	rm -f layer_cache_1.svg
+	rm -f layer_cache_2.svg
+	rm -rf slurm-*
